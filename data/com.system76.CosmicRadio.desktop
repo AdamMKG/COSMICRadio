@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=COSMIC Radio
+Comment=Internet radio streaming applet
+Type=Application
+Exec=cosmic-radio
+Terminal=false
+Categories=COSMIC;
+Keywords=radio;audio;streaming;
+Icon=radio-symbolic
+
+# Required for COSMIC panel to recognize this as an applet
+NoDisplay=true
+X-CosmicApplet=true
+X-CosmicHoverPopup=Auto
+X-OverflowPriority=10
