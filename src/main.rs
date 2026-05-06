@@ -90,250 +90,22 @@ fn ensure_config() -> PathBuf {
         let _ = fs::create_dir_all(parent);
     }
     if !path.exists() {
-        let default_config = r#"[[groups]]
+        // Copy default stations.toml from app data directory if available
+        let default_path = PathBuf::from("/usr/share/cosmic-radio/stations.toml");
+        if default_path.exists() {
+            let _ = fs::copy(&default_path, &path);
+        } else {
+            // Fallback: create minimal default config
+            let default_config = r#"[[groups]]
 name = "SomaFM"
 
 [[groups.stations]]
-name = "Beat Blender"
-url = "https://somafm.com/beatblender256.mp3"
-artwork = "https://somafm.com/img3/beatblender-400.png"
-
-[[groups.stations]]
-name = "Black Rock FM"
-url = "https://somafm.com/blackrockfm256.mp3"
-artwork = "https://somafm.com/img3/blackrockfm-400.png"
-
-[[groups.stations]]
-name = "Boot Liquor"
-url = "https://somafm.com/bootliquor256.mp3"
-artwork = "https://somafm.com/img3/bootliquor-400.png"
-
-[[groups.stations]]
-name = "Bossa Beyond"
-url = "https://somafm.com/bossabeyond256.mp3"
-artwork = "https://somafm.com/img3/bossabeyond-400.png"
-
-[[groups.stations]]
-name = "Chillits"
-url = "https://somafm.com/chillits256.mp3"
-artwork = "https://somafm.com/img3/chillits-400.png"
-
-[[groups.stations]]
-name = "Cliqhop IDM"
-url = "https://somafm.com/cliqhopidm256.mp3"
-artwork = "https://somafm.com/img3/cliqhopidm-400.png"
-
-[[groups.stations]]
-name = "Covers"
-url = "https://somafm.com/covers256.mp3"
-artwork = "https://somafm.com/img3/covers-400.png"
-
-[[groups.stations]]
-name = "Dark Zone"
-url = "https://somafm.com/darkzone256.mp3"
-artwork = "https://somafm.com/img3/darkzone-400.png"
-
-[[groups.stations]]
-name = "Deep Space One"
-url = "https://somafm.com/deepspaceone256.mp3"
-artwork = "https://somafm.com/img3/deepspaceone-400.png"
-
-[[groups.stations]]
-name = "DEF CON Radio"
-url = "https://somafm.com/defconradio256.mp3"
-artwork = "https://somafm.com/img3/defconradio-400.png"
-
-[[groups.stations]]
-name = "Department Store Christmas"
-url = "https://somafm.com/departmentstorechristmas256.mp3"
-artwork = "https://somafm.com/img3/departmentstorechristmas-400.png"
-
-[[groups.stations]]
-name = "Digitalis"
-url = "https://somafm.com/digitalis256.mp3"
-artwork = "https://somafm.com/img3/digitalis-400.png"
-
-[[groups.stations]]
-name = "Doomed"
-url = "https://somafm.com/doomed256.mp3"
-artwork = "https://somafm.com/img3/doomed-400.png"
-
-[[groups.stations]]
-name = "Drone Zone"
-url = "https://somafm.com/dronezone256.mp3"
-artwork = "https://somafm.com/img3/dronezone-400.png"
-
-[[groups.stations]]
-name = "Dubstep Beyond"
-url = "https://somafm.com/dubstepbeyond256.mp3"
-artwork = "https://somafm.com/img3/dubstepbeyond-400.png"
-
-[[groups.stations]]
-name = "Fluid"
-url = "https://somafm.com/fluid256.mp3"
-artwork = "https://somafm.com/img3/fluid-400.png"
-
-[[groups.stations]]
-name = "Folk Forward"
-url = "https://somafm.com/folkforward256.mp3"
-artwork = "https://somafm.com/img3/folkforward-400.png"
-
-[[groups.stations]]
 name = "Groove Salad"
-url = "https://somafm.com/groovesalad256.mp3"
+url = "https://ice5.somafm.com/groovesalad-256-mp3"
 artwork = "https://somafm.com/img3/groovesalad-400.png"
-
-[[groups.stations]]
-name = "Groove Salad Classic"
-url = "https://somafm.com/groovesaladclassic256.mp3"
-artwork = "https://somafm.com/img3/groovesaladclassic-400.png"
-
-[[groups.stations]]
-name = "Heavyweight Reggae"
-url = "https://somafm.com/heavyweightreggae256.mp3"
-artwork = "https://somafm.com/img3/heavyweightreggae-400.png"
-
-[[groups.stations]]
-name = "Iceland Airwaves"
-url = "https://somafm.com/icelandairwaves256.mp3"
-artwork = "https://somafm.com/img3/icelandairwaves-400.png"
-
-[[groups.stations]]
-name = "Illinois Street Lounge"
-url = "https://somafm.com/illinoisstreetlounge256.mp3"
-artwork = "https://somafm.com/img3/illinoisstreetlounge-400.png"
-
-[[groups.stations]]
-name = "Indie Pop Rocks"
-url = "https://somafm.com/indiepoprocks256.mp3"
-artwork = "https://somafm.com/img3/indiepoprocks-400.png"
-
-[[groups.stations]]
-name = "In Sound"
-url = "https://somafm.com/insound256.mp3"
-artwork = "https://somafm.com/img3/insound-400.png"
-
-[[groups.stations]]
-name = "Jolly Ol' Soul"
-url = "https://somafm.com/jollyolsoul256.mp3"
-artwork = "https://somafm.com/img3/jollyolsoul-400.png"
-
-[[groups.stations]]
-name = "Left Coast 70s"
-url = "https://somafm.com/leftcoast70s256.mp3"
-artwork = "https://somafm.com/img3/leftcoast70s-400.png"
-
-[[groups.stations]]
-name = "Lush"
-url = "https://somafm.com/lush256.mp3"
-artwork = "https://somafm.com/img3/lush-400.png"
-
-[[groups.stations]]
-name = "Metal Detector"
-url = "https://somafm.com/metaldetector256.mp3"
-artwork = "https://somafm.com/img3/metaldetector-400.png"
-
-[[groups.stations]]
-name = "Mission Control"
-url = "https://somafm.com/missioncontrol256.mp3"
-artwork = "https://somafm.com/img3/missioncontrol-400.png"
-
-[[groups.stations]]
-name = "n5MD Radio"
-url = "https://somafm.com/n5mdradio256.mp3"
-artwork = "https://somafm.com/img3/n5mdradio-400.png"
-
-[[groups.stations]]
-name = "PopTron"
-url = "https://somafm.com/poptron256.mp3"
-artwork = "https://somafm.com/img3/poptron-400.png"
-
-[[groups.stations]]
-name = "Secret Agent"
-url = "https://somafm.com/secretagent256.mp3"
-artwork = "https://somafm.com/img3/secretagent-400.png"
-
-[[groups.stations]]
-name = "Seven Inch Soul"
-url = "https://somafm.com/seveninchsoul256.mp3"
-artwork = "https://somafm.com/img3/seveninchsoul-400.png"
-
-[[groups.stations]]
-name = "SF 10-33"
-url = "https://somafm.com/sf1033.mp3"
-artwork = "https://somafm.com/img3/sf1033-400.png"
-
-[[groups.stations]]
-name = "SF Police Scanner"
-url = "https://somafm.com/sfpolicescanner256.mp3"
-artwork = "https://somafm.com/img3/sfpolicescanner-400.png"
-
-[[groups.stations]]
-name = "SomaFM Live"
-url = "https://somafm.com/somafmlive256.mp3"
-artwork = "https://somafm.com/img3/somafmlive-400.png"
-
-[[groups.stations]]
-name = "Sonic Universe"
-url = "https://somafm.com/sonicuniverse256.mp3"
-artwork = "https://somafm.com/img3/sonicuniverse-400.png"
-
-[[groups.stations]]
-name = "Space Station Soma"
-url = "https://somafm.com/spacestationsoma256.mp3"
-artwork = "https://somafm.com/img3/spacestationsoma-400.png"
-
-[[groups.stations]]
-name = "Suburbs of Goa"
-url = "https://somafm.com/suburbsofgoa256.mp3"
-artwork = "https://somafm.com/img3/suburbsofgoa-400.png"
-
-[[groups.stations]]
-name = "Synphaera"
-url = "https://somafm.com/synphaera256.mp3"
-artwork = "https://somafm.com/img3/synphaera-400.png"
-
-[[groups.stations]]
-name = "The Trip"
-url = "https://somafm.com/thetrip256.mp3"
-artwork = "https://somafm.com/img3/thetrip-400.png"
-
-[[groups.stations]]
-name = "Thistle Radio"
-url = "https://somafm.com/thistleradio256.mp3"
-artwork = "https://somafm.com/img3/thistleradio-400.png"
-
-[[groups.stations]]
-name = "Tiki Time"
-url = "https://somafm.com/tikitime256.mp3"
-artwork = "https://somafm.com/img3/tikitime-400.png"
-
-[[groups.stations]]
-name = "Underground 80s"
-url = "https://somafm.com/underground80s256.mp3"
-artwork = "https://somafm.com/img3/underground80s-400.png"
-
-[[groups.stations]]
-name = "Vaporwaves"
-url = "https://somafm.com/vaporwaves256.mp3"
-artwork = "https://somafm.com/img3/vaporwaves-400.png"
-
-[[groups.stations]]
-name = "Xmas in Frisko"
-url = "https://somafm.com/xmasinfrisko256.mp3"
-artwork = "https://somafm.com/img3/xmasinfrisko-400.png"
-
-[[groups.stations]]
-name = "Xmas Lounge"
-url = "https://somafm.com/xmaslounge256.mp3"
-artwork = "https://somafm.com/img3/xmaslounge-400.png"
-
-[[groups.stations]]
-name = "Xmas Rocks"
-url = "https://somafm.com/xmasrocks256.mp3"
-artwork = "https://somafm.com/img3/xmasrocks-400.png"
 "#;
-        let _ = fs::write(&path, default_config);
+            let _ = fs::write(&path, default_config);
+        }
     }
     path
 }
@@ -723,13 +495,33 @@ impl RadioApp {
 
     fn derive_artwork_url(stream_url: &str) -> String {
         if stream_url.contains("somafm.com") {
-            let station_name = stream_url
+            let filename = stream_url
                 .split('/')
                 .next_back()
                 .unwrap_or("")
-                .split('.')
-                .next()
-                .unwrap_or("");
+                .to_string();
+            
+            // Extract station name from filename
+            // New format: "digitalis-256-mp3" -> "digitalis"
+            // Old format: "groovesalad256.mp3" -> "groovesalad"
+            let station_name = if filename.contains('-') {
+                // New format: take the part before the first "-"
+                filename.split('-').next().unwrap_or("").to_string()
+            } else {
+                // Old format: remove numeric suffix and extension
+                let without_ext = filename.split('.').next().unwrap_or("");
+                // Remove trailing numbers (e.g., "groovesalad256" -> "groovesalad")
+                let mut name = without_ext.to_string();
+                while let Some(c) = name.chars().last() {
+                    if c.is_ascii_digit() {
+                        name.pop();
+                    } else {
+                        break;
+                    }
+                }
+                name
+            };
+            
             if !station_name.is_empty() {
                 return format!("https://somafm.com/img3/{}-400.png", station_name);
             }

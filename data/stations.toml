@@ -1,0 +1,242 @@
+[[groups]]
+name = "SomaFM"
+
+[[groups.stations]]
+name = "Beat Blender"
+url = "https://ice5.somafm.com/beatblender-256-mp3"
+artwork = "https://somafm.com/img3/beatblender-400.png"
+
+[[groups.stations]]
+name = "Black Rock FM"
+url = "https://ice5.somafm.com/blackrockfm-256-mp3"
+artwork = "https://somafm.com/img3/blackrockfm-400.png"
+
+[[groups.stations]]
+name = "Boot Liquor"
+url = "https://ice5.somafm.com/bootliquor-256-mp3"
+artwork = "https://somafm.com/img3/bootliquor-400.png"
+
+[[groups.stations]]
+name = "Bossa Beyond"
+url = "https://ice5.somafm.com/bossabeyond-256-mp3"
+artwork = "https://somafm.com/img3/bossabeyond-400.png"
+
+[[groups.stations]]
+name = "Chillits"
+url = "https://ice5.somafm.com/chillits-256-mp3"
+artwork = "https://somafm.com/img3/chillits-400.png"
+
+[[groups.stations]]
+name = "Cliqhop IDM"
+url = "https://ice5.somafm.com/cliqhopidm-256-mp3"
+artwork = "https://somafm.com/img3/cliqhopidm-400.png"
+
+[[groups.stations]]
+name = "Covers"
+url = "https://ice5.somafm.com/covers-256-mp3"
+artwork = "https://somafm.com/img3/covers-400.png"
+
+[[groups.stations]]
+name = "Dark Zone"
+url = "https://ice5.somafm.com/darkzone-256-mp3"
+artwork = "https://somafm.com/img3/darkzone-400.png"
+
+[[groups.stations]]
+name = "Deep Space One"
+url = "https://ice5.somafm.com/deepspaceone-256-mp3"
+artwork = "https://somafm.com/img3/deepspaceone-400.png"
+
+[[groups.stations]]
+name = "DEF CON Radio"
+url = "https://ice5.somafm.com/defconradio-256-mp3"
+artwork = "https://somafm.com/img3/defconradio-400.png"
+
+[[groups.stations]]
+name = "Department Store Christmas"
+url = "https://ice5.somafm.com/departmentstorechristmas-256-mp3"
+artwork = "https://somafm.com/img3/departmentstorechristmas-400.png"
+
+[[groups.stations]]
+name = "Digitalis"
+url = "https://ice5.somafm.com/digitalis-256-mp3"
+artwork = "https://somafm.com/img3/digitalis-400.png"
+
+[[groups.stations]]
+name = "Doomed"
+url = "https://ice5.somafm.com/doomed-256-mp3"
+artwork = "https://somafm.com/img3/doomed-400.png"
+
+[[groups.stations]]
+name = "Drone Zone"
+url = "https://ice5.somafm.com/dronezone-256-mp3"
+artwork = "https://somafm.com/img3/dronezone-400.png"
+
+[[groups.stations]]
+name = "Dubstep Beyond"
+url = "https://ice5.somafm.com/dubstepbeyond-256-mp3"
+artwork = "https://somafm.com/img3/dubstepbeyond-400.png"
+
+[[groups.stations]]
+name = "Fluid"
+url = "https://ice5.somafm.com/fluid-256-mp3"
+artwork = "https://somafm.com/img3/fluid-400.png"
+
+[[groups.stations]]
+name = "Folk Forward"
+url = "https://ice5.somafm.com/folkforward-256-mp3"
+artwork = "https://somafm.com/img3/folkforward-400.png"
+
+[[groups.stations]]
+name = "Groove Salad"
+url = "https://ice5.somafm.com/groovesalad-256-mp3"
+artwork = "https://somafm.com/img3/groovesalad-400.png"
+
+[[groups.stations]]
+name = "Groove Salad Classic"
+url = "https://ice5.somafm.com/groovesaladclassic-256-mp3"
+artwork = "https://somafm.com/img3/groovesaladclassic-400.png"
+
+[[groups.stations]]
+name = "Heavyweight Reggae"
+url = "https://ice5.somafm.com/heavyweightreggae-256-mp3"
+artwork = "https://somafm.com/img3/heavyweightreggae-400.png"
+
+[[groups.stations]]
+name = "Iceland Airwaves"
+url = "https://ice5.somafm.com/icelandairwaves-256-mp3"
+artwork = "https://somafm.com/img3/icelandairwaves-400.png"
+
+[[groups.stations]]
+name = "Illinois Street Lounge"
+url = "https://ice5.somafm.com/illinoisstreetlounge-256-mp3"
+artwork = "https://somafm.com/img3/illinoisstreetlounge-400.png"
+
+[[groups.stations]]
+name = "Indie Pop Rocks"
+url = "https://ice5.somafm.com/indiepoprocks-256-mp3"
+artwork = "https://somafm.com/img3/indiepoprocks-400.png"
+
+[[groups.stations]]
+name = "In Sound"
+url = "https://ice5.somafm.com/insound-256-mp3"
+artwork = "https://somafm.com/img3/insound-400.png"
+
+[[groups.stations]]
+name = "Jolly Ol' Soul"
+url = "https://ice5.somafm.com/jollyolsoul-256-mp3"
+artwork = "https://somafm.com/img3/jollyolsoul-400.png"
+
+[[groups.stations]]
+name = "Left Coast 70s"
+url = "https://ice5.somafm.com/leftcoast70s-256-mp3"
+artwork = "https://somafm.com/img3/leftcoast70s-400.png"
+
+[[groups.stations]]
+name = "Lush"
+url = "https://ice5.somafm.com/lush-256-mp3"
+artwork = "https://somafm.com/img3/lush-400.png"
+
+[[groups.stations]]
+name = "Metal Detector"
+url = "https://ice5.somafm.com/metaldetector-256-mp3"
+artwork = "https://somafm.com/img3/metaldetector-400.png"
+
+[[groups.stations]]
+name = "Mission Control"
+url = "https://ice5.somafm.com/missioncontrol-256-mp3"
+artwork = "https://somafm.com/img3/missioncontrol-400.png"
+
+[[groups.stations]]
+name = "n5MD Radio"
+url = "https://ice5.somafm.com/n5mdradio-256-mp3"
+artwork = "https://somafm.com/img3/n5mdradio-400.png"
+
+[[groups.stations]]
+name = "PopTron"
+url = "https://ice5.somafm.com/poptron-256-mp3"
+artwork = "https://somafm.com/img3/poptron-400.png"
+
+[[groups.stations]]
+name = "Secret Agent"
+url = "https://ice5.somafm.com/secretagent-256-mp3"
+artwork = "https://somafm.com/img3/secretagent-400.png"
+
+[[groups.stations]]
+name = "Seven Inch Soul"
+url = "https://ice5.somafm.com/seveninchsoul-256-mp3"
+artwork = "https://somafm.com/img3/seveninchsoul-400.png"
+
+[[groups.stations]]
+name = "SF 10-33"
+url = "https://ice5.somafm.com/sf1033-256-mp3"
+artwork = "https://somafm.com/img3/sf1033-400.png"
+
+[[groups.stations]]
+name = "SF Police Scanner"
+url = "https://ice5.somafm.com/sfpolicescanner-256-mp3"
+artwork = "https://somafm.com/img3/sfpolicescanner-400.png"
+
+[[groups.stations]]
+name = "SomaFM Live"
+url = "https://ice5.somafm.com/somafmlive-256-mp3"
+artwork = "https://somafm.com/img3/somafmlive-400.png"
+
+[[groups.stations]]
+name = "Sonic Universe"
+url = "https://ice5.somafm.com/sonicuniverse-256-mp3"
+artwork = "https://somafm.com/img3/sonicuniverse-400.png"
+
+[[groups.stations]]
+name = "Space Station Soma"
+url = "https://ice5.somafm.com/spacestationsoma-256-mp3"
+artwork = "https://somafm.com/img3/spacestationsoma-400.png"
+
+[[groups.stations]]
+name = "Suburbs of Goa"
+url = "https://ice5.somafm.com/suburbsofgoa-256-mp3"
+artwork = "https://somafm.com/img3/suburbsofgoa-400.png"
+
+[[groups.stations]]
+name = "Synphaera"
+url = "https://ice5.somafm.com/synphaera-256-mp3"
+artwork = "https://somafm.com/img3/synphaera-400.png"
+
+[[groups.stations]]
+name = "The Trip"
+url = "https://ice5.somafm.com/thetrip-256-mp3"
+artwork = "https://somafm.com/img3/thetrip-400.png"
+
+[[groups.stations]]
+name = "Thistle Radio"
+url = "https://ice5.somafm.com/thistleradio-256-mp3"
+artwork = "https://somafm.com/img3/thistleradio-400.png"
+
+[[groups.stations]]
+name = "Tiki Time"
+url = "https://ice5.somafm.com/tikitime-256-mp3"
+artwork = "https://somafm.com/img3/tikitime-400.png"
+
+[[groups.stations]]
+name = "Underground 80s"
+url = "https://ice5.somafm.com/underground80s-256-mp3"
+artwork = "https://somafm.com/img3/underground80s-400.png"
+
+[[groups.stations]]
+name = "Vaporwaves"
+url = "https://ice5.somafm.com/vaporwaves-256-mp3"
+artwork = "https://somafm.com/img3/vaporwaves-400.png"
+
+[[groups.stations]]
+name = "Xmas in Frisko"
+url = "https://ice5.somafm.com/xmasinfrisko-256-mp3"
+artwork = "https://somafm.com/img3/xmasinfrisko-400.png"
+
+[[groups.stations]]
+name = "Xmas Lounge"
+url = "https://ice5.somafm.com/xmaslounge-256-mp3"
+artwork = "https://somafm.com/img3/xmaslounge-400.png"
+
+[[groups.stations]]
+name = "Xmas Rocks"
+url = "https://ice5.somafm.com/xmasrocks-256-mp3"
+artwork = "https://somafm.com/img3/xmasrocks-400.png"
