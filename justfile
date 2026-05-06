@@ -8,6 +8,8 @@ install: build
     cp target/release/cosmic-radio ~/.local/bin/
     mkdir -p ~/.local/share/applications
     cp data/com.system76.CosmicRadio.desktop ~/.local/share/applications/
+    mkdir -p ~/.local/share/icons/hicolor/scalable/apps
+    cp data/radio_icon.svg ~/.local/share/icons/hicolor/scalable/apps/radio_icon.svg
 
 # Run the applet (for testing)
 run:

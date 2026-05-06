@@ -11,6 +11,8 @@ serde = { version = "1", features = ["derive"] }
 dirs = "5.0"
 gstreamer = { version = "0.23", features = ["v1_24"] }
 gstreamer-play = { version = "0.23", features = ["v1_24"] }
+reqwest = { version = "0.12", features = ["default-tls", "json"] }
+sha2 = "0.10"
 
 [profile.release]
 lto = true
