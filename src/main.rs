@@ -495,35 +495,19 @@ impl RadioApp {
 
     fn derive_artwork_url(stream_url: &str) -> String {
         if stream_url.contains("somafm.com") {
+            // Extract station ID from URL like https://ice5.somafm.com/beatblender-256-mp3
             let filename = stream_url
                 .split('/')
                 .next_back()
                 .unwrap_or("")
                 .to_string();
             
-            // Extract station name from filename
-            // New format: "digitalis-256-mp3" -> "digitalis"
-            // Old format: "groovesalad256.mp3" -> "groovesalad"
-            let station_name = if filename.contains('-') {
-                // New format: take the part before the first "-"
-                filename.split('-').next().unwrap_or("").to_string()
-            } else {
-                // Old format: remove numeric suffix and extension
-                let without_ext = filename.split('.').next().unwrap_or("");
-                // Remove trailing numbers (e.g., "groovesalad256" -> "groovesalad")
-                let mut name = without_ext.to_string();
-                while let Some(c) = name.chars().last() {
-                    if c.is_ascii_digit() {
-                        name.pop();
-                    } else {
-                        break;
-                    }
-                }
-                name
-            };
+            // Get station ID (part before first "-")
+            let station_id = filename.split('-').next().unwrap_or("");
             
-            if !station_name.is_empty() {
-                return format!("https://somafm.com/img3/{}-400.png", station_name);
+            if !station_id.is_empty() {
+                // Use the SomaFM API artwork URL format
+                return format!("https://api.somafm.com/logos/256/{}-256.png", station_id);
             }
         }
         String::new()

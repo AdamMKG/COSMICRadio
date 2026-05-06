@@ -2,241 +2,232 @@
 name = "SomaFM"
 
 [[groups.stations]]
-name = "Beat Blender"
-url = "https://ice5.somafm.com/beatblender-256-mp3"
-artwork = "https://somafm.com/img3/beatblender-400.png"
+name = "Seven Inch Soul"
+url = "https://ice5.somafm.com/7soul-256-mp3"
+artwork = "https://api.somafm.com/logos/256/7soul256.png"
 
 [[groups.stations]]
-name = "Black Rock FM"
-url = "https://ice5.somafm.com/blackrockfm-256-mp3"
-artwork = "https://somafm.com/img3/blackrockfm-400.png"
+name = "Beat Blender"
+url = "https://ice5.somafm.com/beatblender-256-mp3"
+artwork = "https://api.somafm.com/logos/256/beatblender256.png"
 
 [[groups.stations]]
 name = "Boot Liquor"
 url = "https://ice5.somafm.com/bootliquor-256-mp3"
-artwork = "https://somafm.com/img3/bootliquor-400.png"
+artwork = "https://api.somafm.com/logos/256/bootliquor256.png"
 
 [[groups.stations]]
-name = "Bossa Beyond"
-url = "https://ice5.somafm.com/bossabeyond-256-mp3"
-artwork = "https://somafm.com/img3/bossabeyond-400.png"
+name = "Black Rock FM"
+url = "https://ice5.somafm.com/brfm-256-mp3"
+artwork = "https://api.somafm.com/logos/256/brfm256.jpg"
 
 [[groups.stations]]
-name = "Chillits"
-url = "https://ice5.somafm.com/chillits-256-mp3"
-artwork = "https://somafm.com/img3/chillits-400.png"
-
-[[groups.stations]]
-name = "Cliqhop IDM"
-url = "https://ice5.somafm.com/cliqhopidm-256-mp3"
-artwork = "https://somafm.com/img3/cliqhopidm-400.png"
+name = "cliqhop idm"
+url = "https://ice5.somafm.com/cliqhop-256-mp3"
+artwork = "https://api.somafm.com/logos/256/cliqhop256.png"
 
 [[groups.stations]]
 name = "Covers"
 url = "https://ice5.somafm.com/covers-256-mp3"
-artwork = "https://somafm.com/img3/covers-400.png"
-
-[[groups.stations]]
-name = "Dark Zone"
-url = "https://ice5.somafm.com/darkzone-256-mp3"
-artwork = "https://somafm.com/img3/darkzone-400.png"
+artwork = "https://api.somafm.com/logos/256/covers256.png"
 
 [[groups.stations]]
 name = "Deep Space One"
 url = "https://ice5.somafm.com/deepspaceone-256-mp3"
-artwork = "https://somafm.com/img3/deepspaceone-400.png"
+artwork = "https://api.somafm.com/logos/256/deepspaceone256.png"
 
 [[groups.stations]]
 name = "DEF CON Radio"
-url = "https://ice5.somafm.com/defconradio-256-mp3"
-artwork = "https://somafm.com/img3/defconradio-400.png"
-
-[[groups.stations]]
-name = "Department Store Christmas"
-url = "https://ice5.somafm.com/departmentstorechristmas-256-mp3"
-artwork = "https://somafm.com/img3/departmentstorechristmas-400.png"
+url = "https://ice5.somafm.com/defcon-256-mp3"
+artwork = "https://api.somafm.com/logos/256/defcon256.png"
 
 [[groups.stations]]
 name = "Digitalis"
 url = "https://ice5.somafm.com/digitalis-256-mp3"
-artwork = "https://somafm.com/img3/digitalis-400.png"
+artwork = "https://api.somafm.com/logos/256/digitalis256.png"
 
 [[groups.stations]]
 name = "Doomed"
 url = "https://ice5.somafm.com/doomed-256-mp3"
-artwork = "https://somafm.com/img3/doomed-400.png"
+artwork = "https://api.somafm.com/logos/256/doomed256.png"
 
 [[groups.stations]]
 name = "Drone Zone"
 url = "https://ice5.somafm.com/dronezone-256-mp3"
-artwork = "https://somafm.com/img3/dronezone-400.png"
+artwork = "https://api.somafm.com/logos/256/dronezone256.png"
 
 [[groups.stations]]
-name = "Dubstep Beyond"
-url = "https://ice5.somafm.com/dubstepbeyond-256-mp3"
-artwork = "https://somafm.com/img3/dubstepbeyond-400.png"
+name = "Drone Zone 2"
+url = "https://ice5.somafm.com/dz2-256-mp3"
+artwork = "https://api.somafm.com/logos/256/dz2256.png"
+
+[[groups.stations]]
+name = "Dub Step Beyond"
+url = "https://ice5.somafm.com/dubstep-256-mp3"
+artwork = "https://api.somafm.com/logos/256/dubstep256.png"
 
 [[groups.stations]]
 name = "Fluid"
 url = "https://ice5.somafm.com/fluid-256-mp3"
-artwork = "https://somafm.com/img3/fluid-400.png"
+artwork = "https://api.somafm.com/logos/256/fluid256.jpg"
 
 [[groups.stations]]
 name = "Folk Forward"
-url = "https://ice5.somafm.com/folkforward-256-mp3"
-artwork = "https://somafm.com/img3/folkforward-400.png"
+url = "https://ice5.somafm.com/folkfwd-256-mp3"
+artwork = "https://api.somafm.com/logos/256/folkfwd256.png"
 
 [[groups.stations]]
 name = "Groove Salad"
 url = "https://ice5.somafm.com/groovesalad-256-mp3"
-artwork = "https://somafm.com/img3/groovesalad-400.png"
+artwork = "https://api.somafm.com/logos/256/groovesalad256.png"
+
+[[groups.stations]]
+name = "Groove Salad 2"
+url = "https://ice5.somafm.com/groovesalad2-256-mp3"
+artwork = "https://api.somafm.com/logos/256/generic256.jpg"
 
 [[groups.stations]]
 name = "Groove Salad Classic"
-url = "https://ice5.somafm.com/groovesaladclassic-256-mp3"
-artwork = "https://somafm.com/img3/groovesaladclassic-400.png"
-
-[[groups.stations]]
-name = "Heavyweight Reggae"
-url = "https://ice5.somafm.com/heavyweightreggae-256-mp3"
-artwork = "https://somafm.com/img3/heavyweightreggae-400.png"
-
-[[groups.stations]]
-name = "Iceland Airwaves"
-url = "https://ice5.somafm.com/icelandairwaves-256-mp3"
-artwork = "https://somafm.com/img3/icelandairwaves-400.png"
+url = "https://ice5.somafm.com/gsclassic-256-mp3"
+artwork = "https://api.somafm.com/logos/256/gsclassic256.jpg"
 
 [[groups.stations]]
 name = "Illinois Street Lounge"
-url = "https://ice5.somafm.com/illinoisstreetlounge-256-mp3"
-artwork = "https://somafm.com/img3/illinoisstreetlounge-400.png"
+url = "https://ice5.somafm.com/illstreet-256-mp3"
+artwork = "https://api.somafm.com/logos/256/illstreet256.jpg"
 
 [[groups.stations]]
-name = "Indie Pop Rocks"
-url = "https://ice5.somafm.com/indiepoprocks-256-mp3"
-artwork = "https://somafm.com/img3/indiepoprocks-400.png"
+name = "Indie Pop Rocks!"
+url = "https://ice5.somafm.com/indiepop-256-mp3"
+artwork = "https://api.somafm.com/logos/256/indiepop256.png"
 
 [[groups.stations]]
-name = "In Sound"
-url = "https://ice5.somafm.com/insound-256-mp3"
-artwork = "https://somafm.com/img3/insound-400.png"
-
-[[groups.stations]]
-name = "Jolly Ol' Soul"
-url = "https://ice5.somafm.com/jollyolsoul-256-mp3"
-artwork = "https://somafm.com/img3/jollyolsoul-400.png"
-
-[[groups.stations]]
-name = "Left Coast 70s"
-url = "https://ice5.somafm.com/leftcoast70s-256-mp3"
-artwork = "https://somafm.com/img3/leftcoast70s-400.png"
+name = "SomaFM Live"
+url = "https://ice5.somafm.com/live-256-mp3"
+artwork = "https://api.somafm.com/logos/256/live256.png"
 
 [[groups.stations]]
 name = "Lush"
 url = "https://ice5.somafm.com/lush-256-mp3"
-artwork = "https://somafm.com/img3/lush-400.png"
-
-[[groups.stations]]
-name = "Metal Detector"
-url = "https://ice5.somafm.com/metaldetector-256-mp3"
-artwork = "https://somafm.com/img3/metaldetector-400.png"
+artwork = "https://api.somafm.com/logos/256/lush256.png"
 
 [[groups.stations]]
 name = "Mission Control"
 url = "https://ice5.somafm.com/missioncontrol-256-mp3"
-artwork = "https://somafm.com/img3/missioncontrol-400.png"
-
-[[groups.stations]]
-name = "n5MD Radio"
-url = "https://ice5.somafm.com/n5mdradio-256-mp3"
-artwork = "https://somafm.com/img3/n5mdradio-400.png"
+artwork = "https://api.somafm.com/logos/256/missioncontrol256.png"
 
 [[groups.stations]]
 name = "PopTron"
 url = "https://ice5.somafm.com/poptron-256-mp3"
-artwork = "https://somafm.com/img3/poptron-400.png"
+artwork = "https://api.somafm.com/logos/256/poptron256.png"
 
 [[groups.stations]]
 name = "Secret Agent"
 url = "https://ice5.somafm.com/secretagent-256-mp3"
-artwork = "https://somafm.com/img3/secretagent-400.png"
+artwork = "https://api.somafm.com/logos/256/secretagent256.png"
 
 [[groups.stations]]
-name = "Seven Inch Soul"
-url = "https://ice5.somafm.com/seveninchsoul-256-mp3"
-artwork = "https://somafm.com/img3/seveninchsoul-400.png"
+name = "Left Coast 70s"
+url = "https://ice5.somafm.com/seventies-256-mp3"
+artwork = "https://api.somafm.com/logos/256/seventies256.jpg"
 
 [[groups.stations]]
 name = "SF 10-33"
 url = "https://ice5.somafm.com/sf1033-256-mp3"
-artwork = "https://somafm.com/img3/sf1033-400.png"
-
-[[groups.stations]]
-name = "SF Police Scanner"
-url = "https://ice5.somafm.com/sfpolicescanner-256-mp3"
-artwork = "https://somafm.com/img3/sfpolicescanner-400.png"
-
-[[groups.stations]]
-name = "SomaFM Live"
-url = "https://ice5.somafm.com/somafmlive-256-mp3"
-artwork = "https://somafm.com/img3/somafmlive-400.png"
+artwork = "https://api.somafm.com/logos/256/sf1033256.png"
 
 [[groups.stations]]
 name = "Sonic Universe"
 url = "https://ice5.somafm.com/sonicuniverse-256-mp3"
-artwork = "https://somafm.com/img3/sonicuniverse-400.png"
+artwork = "https://api.somafm.com/logos/256/sonicuniverse256.png"
 
 [[groups.stations]]
 name = "Space Station Soma"
-url = "https://ice5.somafm.com/spacestationsoma-256-mp3"
-artwork = "https://somafm.com/img3/spacestationsoma-400.png"
+url = "https://ice5.somafm.com/spacestation-256-mp3"
+artwork = "https://api.somafm.com/logos/256/spacestation256.png"
 
 [[groups.stations]]
 name = "Suburbs of Goa"
 url = "https://ice5.somafm.com/suburbsofgoa-256-mp3"
-artwork = "https://somafm.com/img3/suburbsofgoa-400.png"
-
-[[groups.stations]]
-name = "Synphaera"
-url = "https://ice5.somafm.com/synphaera-256-mp3"
-artwork = "https://somafm.com/img3/synphaera-400.png"
+artwork = "https://api.somafm.com/logos/256/suburbsofgoa256.png"
 
 [[groups.stations]]
 name = "The Trip"
 url = "https://ice5.somafm.com/thetrip-256-mp3"
-artwork = "https://somafm.com/img3/thetrip-400.png"
+artwork = "https://api.somafm.com/logos/256/thetrip256.jpg"
 
 [[groups.stations]]
-name = "Thistle Radio"
-url = "https://ice5.somafm.com/thistleradio-256-mp3"
-artwork = "https://somafm.com/img3/thistleradio-400.png"
-
-[[groups.stations]]
-name = "Tiki Time"
-url = "https://ice5.somafm.com/tikitime-256-mp3"
-artwork = "https://somafm.com/img3/tikitime-400.png"
+name = "ThistleRadio"
+url = "https://ice5.somafm.com/thistle-256-mp3"
+artwork = "https://api.somafm.com/logos/256/thistle256.jpg"
 
 [[groups.stations]]
 name = "Underground 80s"
-url = "https://ice5.somafm.com/underground80s-256-mp3"
-artwork = "https://somafm.com/img3/underground80s-400.png"
+url = "https://ice5.somafm.com/u80s-256-mp3"
+artwork = "https://api.somafm.com/logos/256/u80s256.png"
+
+[[groups.stations]]
+name = "Metal Detector"
+url = "https://ice5.somafm.com/metal-256-mp3"
+artwork = "https://api.somafm.com/logos/256/metal256.png"
+
+[[groups.stations]]
+name = "Heavyweight Reggae"
+url = "https://ice5.somafm.com/reggae-256-mp3"
+artwork = "https://api.somafm.com/logos/256/reggae256.png"
+
+[[groups.stations]]
+name = "SF Police Scanner"
+url = "https://ice5.somafm.com/scanner-256-mp3"
+artwork = "https://api.somafm.com/logos/256/scanner256.png"
 
 [[groups.stations]]
 name = "Vaporwaves"
 url = "https://ice5.somafm.com/vaporwaves-256-mp3"
-artwork = "https://somafm.com/img3/vaporwaves-400.png"
+artwork = "https://api.somafm.com/logos/256/vaporwaves256.png"
 
 [[groups.stations]]
-name = "Xmas in Frisko"
-url = "https://ice5.somafm.com/xmasinfrisko-256-mp3"
-artwork = "https://somafm.com/img3/xmasinfrisko-400.png"
+name = "SomaFM Specials"
+url = "https://ice5.somafm.com/specials-256-mp3"
+artwork = "https://api.somafm.com/logos/256/specials256.png"
 
 [[groups.stations]]
-name = "Xmas Lounge"
-url = "https://ice5.somafm.com/xmaslounge-256-mp3"
-artwork = "https://somafm.com/img3/xmaslounge-400.png"
+name = "n5MD Radio"
+url = "https://ice5.somafm.com/n5md-256-mp3"
+artwork = "https://api.somafm.com/logos/256/n5md256.png"
 
 [[groups.stations]]
-name = "Xmas Rocks"
-url = "https://ice5.somafm.com/xmasrocks-256-mp3"
-artwork = "https://somafm.com/img3/xmasrocks-400.png"
+name = "Synphaera Radio"
+url = "https://ice5.somafm.com/synphaera-256-mp3"
+artwork = "https://api.somafm.com/logos/256/synphaera256.jpg"
+
+[[groups.stations]]
+name = "The Dark Zone"
+url = "https://ice5.somafm.com/darkzone-256-mp3"
+artwork = "https://api.somafm.com/logos/256/darkzone256.jpg"
+
+[[groups.stations]]
+name = "SF in SF"
+url = "https://ice5.somafm.com/sfinsf-256-mp3"
+artwork = "https://api.somafm.com/logos/256/sfinsf256.jpg"
+
+[[groups.stations]]
+name = "Tiki Time"
+url = "https://ice5.somafm.com/tikitime-256-mp3"
+artwork = "https://api.somafm.com/logos/256/tikitime256.jpg"
+
+[[groups.stations]]
+name = "Bossa Beyond"
+url = "https://ice5.somafm.com/bossa-256-mp3"
+artwork = "https://api.somafm.com/logos/256/bossa-256.jpg"
+
+[[groups.stations]]
+name = "The In-Sound"
+url = "https://ice5.somafm.com/insound-256-mp3"
+artwork = "https://api.somafm.com/logos/256/insound-256.jpg"
+
+[[groups.stations]]
+name = "Chillits Radio"
+url = "https://ice5.somafm.com/chillits-256-mp3"
+artwork = "https://api.somafm.com/logos/256/chillits256.png"
+
