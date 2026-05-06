@@ -6,6 +6,9 @@ edition = "2021"
 [dependencies]
 libcosmic = { git = "https://github.com/pop-os/libcosmic", default-features = false, features = ["applet", "tokio", "wayland"] }
 tokio = { version = "1", features = ["full"] }
+toml = "0.8"
+serde = { version = "1", features = ["derive"] }
+dirs = "5.0"
 
 [profile.release]
 lto = true

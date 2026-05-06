@@ -4,26 +4,82 @@ use cosmic::{
         self, Alignment,
         platform_specific::shell::commands::popup::{destroy_popup, get_popup},
         widget::{column},
-        window,
+        window, Subscription,
     },
-    widget::{text},
+    widget::{text, scrollable, button, divider},
 };
+use std::path::PathBuf;
+use std::fs;
+use serde::Deserialize;
 
 const APP_ID: &str = "com.system76.CosmicRadio";
 
-fn main() -> cosmic::iced::Result {
-    cosmic::applet::run::<RadioApp>(())
+#[derive(Debug, Clone, Deserialize)]
+struct Station {
+    name: String,
+    url: String,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+struct Config {
+    stations: Vec<Station>,
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self { stations: vec![] }
+    }
+}
+
+fn config_path() -> PathBuf {
+    dirs::config_dir()
+        .unwrap_or_else(|| PathBuf::from("~/.config"))
+        .join("cosmic-radio")
+        .join("stations.toml")
+}
+
+fn load_config() -> Config {
+    let path = config_path();
+    if path.exists() {
+        if let Ok(content) = fs::read_to_string(&path) {
+            if let Ok(config) = toml::from_str::<Config>(&content) {
+                return config;
+            }
+        }
+    }
+    Config::default()
+}
+
+fn ensure_config() -> PathBuf {
+    let path = config_path();
+    if let Some(parent) = path.parent() {
+        let _ = fs::create_dir_all(parent);
+    }
+    if !path.exists() {
+        let default_config = r#"[[stations]]
+name = "SomaFM Groove Salad"
+url = "https://somafm.com/groovesalad256.mp3"
+
+[[stations]]
+name = "SomaFM Drone Zone"
+url = "https://somafm.com/dronezone256.mp3"
+"#;
+        let _ = fs::write(&path, default_config);
+    }
+    path
 }
 
 struct RadioApp {
     core: cosmic::app::Core,
     popup: Option<window::Id>,
+    stations: Vec<Station>,
 }
 
 #[derive(Debug, Clone)]
 enum Message {
     TogglePopup,
     Closed(window::Id),
+    ConfigReloaded(Vec<Station>),
 }
 
 impl cosmic::Application for RadioApp {
@@ -41,10 +97,15 @@ impl cosmic::Application for RadioApp {
     }
 
     fn init(core: cosmic::app::Core, _flags: ()) -> (Self, app::Task<Self::Message>) {
+        let _path = ensure_config();
+        let config = load_config();
+        let stations = config.stations;
+
         (
             Self {
                 core,
                 popup: None,
+                stations,
             },
             Task::none(),
         )
@@ -79,6 +140,9 @@ impl cosmic::Application for RadioApp {
                     self.popup = None;
                 }
             }
+            Message::ConfigReloaded(stations) => {
+                self.stations = stations;
+            }
         }
         Task::none()
     }
@@ -93,11 +157,26 @@ impl cosmic::Application for RadioApp {
 
     fn view_window(&self, id: window::Id) -> Element<'_, Message> {
         if matches!(self.popup, Some(p) if p == id) {
+            let stations_list = self.stations.iter().map(|station| {
+                button::text(&station.name)
+                    .on_press(Message::ConfigReloaded(self.stations.clone()))
+                    .width(iced::Length::Fill)
+                    .padding(8)
+                    .into()
+            });
+
             let content = column![
-                text::title3("Hello World"),
+                text::title3("COSMIC Radio"),
+                divider::horizontal::default(),
+                scrollable(
+                    column(stations_list)
+                        .spacing(4)
+                        .padding(8)
+                )
+                .height(iced::Length::Fixed(300.0)),
             ]
-            .align_x(Alignment::Center)
-            .padding(16);
+            .align_x(Alignment::Start)
+            .padding(8);
 
             self.core.applet.popup_container(content).into()
         } else {
@@ -105,7 +184,15 @@ impl cosmic::Application for RadioApp {
         }
     }
 
+    fn subscription(&self) -> Subscription<Message> {
+        Subscription::none()
+    }
+
     fn style(&self) -> Option<iced::theme::Style> {
         Some(cosmic::applet::style())
     }
+}
+
+fn main() -> cosmic::iced::Result {
+    cosmic::applet::run::<RadioApp>(())
 }
