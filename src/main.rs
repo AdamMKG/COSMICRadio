@@ -3,21 +3,26 @@ use cosmic::{
     iced::{
         self,
         platform_specific::shell::commands::popup::{destroy_popup, get_popup},
-        widget::{column, image, row},
+        widget::{column, container, image, row},
         window, Alignment, Subscription,
     },
     widget::{button, divider, scrollable, slider, text},
     Element, Task,
 };
+use gstreamer::{tags::Artist, tags::Title, BusSyncReply, MessageView};
+use gstreamer::prelude::*;
 use gstreamer_play::Play;
 use serde::Deserialize;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
 const APP_ID: &str = "com.system76.CosmicRadio";
+const MARQUEE_MAX_CHARS: usize = 29;
+const MARQUEE_END_PAUSE_TICKS: f64 = 20.0;
 
 #[derive(Debug, Clone, Deserialize)]
 struct Station {
@@ -59,16 +64,12 @@ fn load_config() -> Config {
     let path = config_path();
     if path.exists() {
         if let Ok(content) = fs::read_to_string(&path) {
-            // Try parsing as TOML value to check structure
             if let Ok(value) = content.parse::<toml::Value>() {
-                // New format: has "groups" key
                 if value.get("groups").is_some() {
                     if let Ok(config) = toml::from_str::<Config>(&content) {
                         return config;
                     }
-                }
-                // Old format: has "stations" key (flat list)
-                else if value.get("stations").is_some() {
+                } else if value.get("stations").is_some() {
                     if let Ok(old_config) = toml::from_str::<OldConfig>(&content) {
                         return Config {
                             groups: vec![StationGroup {
@@ -90,24 +91,30 @@ fn ensure_config() -> PathBuf {
         let _ = fs::create_dir_all(parent);
     }
     if !path.exists() {
-        // Copy default stations.toml from app data directory if available
         let default_path = PathBuf::from("/usr/share/cosmic-radio/stations.toml");
         if default_path.exists() {
             let _ = fs::copy(&default_path, &path);
-        } else {
-            // Fallback: create minimal default config
-            let default_config = r#"[[groups]]
-name = "SomaFM"
-
-[[groups.stations]]
-name = "Groove Salad"
-url = "https://ice5.somafm.com/groovesalad-256-mp3"
-artwork = "https://somafm.com/img3/groovesalad-400.png"
-"#;
-            let _ = fs::write(&path, default_config);
         }
     }
     path
+}
+
+fn resolve_pls(content: &str) -> Option<(String, String)> {
+    let mut url = None;
+    let mut title = None;
+    for line in content.lines() {
+        let line = line.trim();
+        let lower = line.to_lowercase();
+        if lower.starts_with("file1=") {
+            url = Some(line[6..].to_string());
+        } else if lower.starts_with("title1=") {
+            title = Some(line[7..].to_string());
+        }
+        if url.is_some() && title.is_some() {
+            break;
+        }
+    }
+    url.map(|u| (u, title.unwrap_or_default()))
 }
 
 struct RadioApp {
@@ -121,6 +128,9 @@ struct RadioApp {
     player: Option<Play>,
     station_artwork: HashMap<usize, PathBuf>,
     group_collapsed: Vec<bool>,
+    now_playing: String,
+    scroll_offset: f64,
+    latest_metadata: Arc<Mutex<Option<String>>>,
 }
 
 #[derive(Debug, Clone)]
@@ -132,6 +142,7 @@ enum Message {
     SetVolume(f64),
     EditStations,
     ToggleGroupCollapse(usize),
+    MarqueeTick,
 }
 
 impl cosmic::Application for RadioApp {
@@ -152,16 +163,39 @@ impl cosmic::Application for RadioApp {
         let _path = ensure_config();
         let config = load_config();
         let groups = config.groups;
-
-        // Flatten stations for playback indexing
         let flat_stations: Vec<Station> = groups.iter().flat_map(|g| g.stations.clone()).collect();
-
-        // Initialize all groups as expanded (not collapsed)
         let group_collapsed = vec![false; groups.len()];
 
         gstreamer::init().expect("Failed to initialize GStreamer");
 
         let player: Play = Play::new(None::<gstreamer_play::PlayVideoRenderer>);
+        let latest_metadata = Arc::new(Mutex::new(None::<String>));
+
+        let pipeline = player.pipeline();
+        if let Some(bus) = pipeline.bus() {
+            let md = latest_metadata.clone();
+            bus.set_sync_handler(move |_bus: &gstreamer::Bus, msg: &gstreamer::Message| {
+                if let MessageView::Tag(tag_msg) = msg.view() {
+                    let tags = tag_msg.tags();
+                    let artist = tags.get::<Artist>().map(|v| v.get().to_string());
+                    let title = tags.get::<Title>().map(|v| v.get().to_string());
+
+                    let display = match (artist, title) {
+                        (Some(a), Some(t)) => Some(format!("{} - {}", a, t)),
+                        (None, Some(t)) => Some(t),
+                        (Some(a), None) => Some(a),
+                        _ => None,
+                    };
+
+                    if let Some(s) = display {
+                        if let Ok(mut guard) = md.lock() {
+                            *guard = Some(s);
+                        }
+                    }
+                }
+                BusSyncReply::Pass
+            });
+        }
 
         (
             Self {
@@ -175,6 +209,9 @@ impl cosmic::Application for RadioApp {
                 player: Some(player),
                 station_artwork: HashMap::new(),
                 group_collapsed,
+                now_playing: String::new(),
+                scroll_offset: 0.0,
+                latest_metadata,
             },
             Task::none(),
         )
@@ -201,7 +238,6 @@ impl cosmic::Application for RadioApp {
                         None,
                     );
 
-                    // Preload artwork for all stations
                     for i in 0..self.flat_stations.len() {
                         self.load_artwork(i);
                     }
@@ -217,12 +253,14 @@ impl cosmic::Application for RadioApp {
             Message::SelectStation(index) => {
                 self.current_station = Some(index);
                 self.is_playing = true;
+                self.scroll_offset = 0.0;
                 self.start_playback();
                 self.load_artwork(index);
             }
             Message::TogglePlayback => {
                 self.is_playing = !self.is_playing;
                 if self.is_playing {
+                    self.scroll_offset = 0.0;
                     self.start_playback();
                 } else {
                     self.stop_playback();
@@ -237,7 +275,6 @@ impl cosmic::Application for RadioApp {
             Message::EditStations => {
                 let path = config_path();
 
-                // 1. Check Env Vars (Respects power users)
                 let editor_cmd = std::env::var("VISUAL").or_else(|_| std::env::var("EDITOR"));
 
                 match editor_cmd {
@@ -245,12 +282,7 @@ impl cosmic::Application for RadioApp {
                         let _ = std::process::Command::new(cmd).arg(path).spawn();
                     }
                     Err(_) => {
-                        // 2. Env Vars not set? Try launching COSMIC Edit directly.
-                        // This bypasses the broken xdg-open MIME logic on Pop!_OS.
                         let status = std::process::Command::new("cosmic-edit").arg(&path).spawn();
-
-                        // 3. Last resort: if cosmic-edit fails (maybe they uninstalled it),
-                        // then use xdg-open.
                         if status.is_err() {
                             let _ = std::process::Command::new("xdg-open").arg(path).spawn();
                         }
@@ -260,6 +292,29 @@ impl cosmic::Application for RadioApp {
             Message::ToggleGroupCollapse(index) => {
                 if index < self.group_collapsed.len() {
                     self.group_collapsed[index] = !self.group_collapsed[index];
+                }
+            }
+            Message::MarqueeTick => {
+                if let Ok(mut md) = self.latest_metadata.lock() {
+                    if let Some(new_title) = md.take() {
+                        self.now_playing = new_title;
+                        self.scroll_offset = 0.0;
+                    }
+                }
+
+                if !self.now_playing.is_empty() {
+                    let char_count = self.now_playing.chars().count();
+                    if char_count > MARQUEE_MAX_CHARS {
+                        let max_offset = (char_count - MARQUEE_MAX_CHARS) as f64;
+                        let total_cycle = max_offset + MARQUEE_END_PAUSE_TICKS;
+                        if self.scroll_offset >= total_cycle {
+                            self.scroll_offset = 0.0;
+                        } else if self.scroll_offset < max_offset {
+                            self.scroll_offset += 1.0;
+                        } else {
+                            self.scroll_offset += 1.0;
+                        }
+                    }
                 }
             }
         }
@@ -292,16 +347,34 @@ impl cosmic::Application for RadioApp {
                 button::text("Play").on_press(Message::TogglePlayback)
             };
 
-            // Build now_playing row elements conditionally
             let mut now_playing_elements: Vec<Element<'_, Message>> = Vec::new();
 
-            // Only add artwork if we have a valid cached path
             if let Some(art_path) = current_artwork {
                 now_playing_elements.push(Self::artwork_image(Some(art_path), 48));
             }
 
-            // Always add the station name text
-            now_playing_elements.push(text::body(current_station_name).size(14).into());
+            let display_text = if self.now_playing.is_empty() {
+                current_station_name.to_string()
+            } else {
+                self.now_playing.clone()
+            };
+
+            let char_count = display_text.chars().count();
+            let marquee_text: String = if char_count > MARQUEE_MAX_CHARS {
+                let offset = (self.scroll_offset as usize).min(char_count - MARQUEE_MAX_CHARS);
+                display_text.chars().skip(offset).take(MARQUEE_MAX_CHARS).collect()
+            } else {
+                display_text
+            };
+
+            let now_playing_element: Element<'_, Message> = container(
+                text::body(marquee_text).size(14),
+            )
+            .width(iced::Length::Fixed(220.0))
+            .clip(true)
+            .into();
+
+            now_playing_elements.push(now_playing_element);
 
             let now_playing_row = row(now_playing_elements)
                 .spacing(8)
@@ -313,12 +386,10 @@ impl cosmic::Application for RadioApp {
             ]
             .align_y(Alignment::Center);
 
-            // Build UI elements for groups and stations
             let mut ui_elements: Vec<Element<'_, Message>> = Vec::new();
-            let mut flat_idx: usize = 0; // Tracks index into flat_stations
+            let mut flat_idx: usize = 0;
 
             for (group_idx, group) in self.groups.iter().enumerate() {
-                // Group header with collapse toggle
                 let collapse_icon = if self.group_collapsed[group_idx] {
                     "▶"
                 } else {
@@ -336,7 +407,6 @@ impl cosmic::Application for RadioApp {
                 .spacing(8);
                 ui_elements.push(group_header.into());
 
-                // Add stations if group is expanded
                 if !self.group_collapsed[group_idx] {
                     for station in &group.stations {
                         let station_art = self.station_artwork.get(&flat_idx);
@@ -355,7 +425,7 @@ impl cosmic::Application for RadioApp {
                         flat_idx += 1;
                     }
                 } else {
-                    flat_idx += group.stations.len(); // Skip stations in collapsed group
+                    flat_idx += group.stations.len();
                 }
             }
 
@@ -385,7 +455,7 @@ impl cosmic::Application for RadioApp {
     }
 
     fn subscription(&self) -> Subscription<Message> {
-        Subscription::none()
+        iced::time::every(Duration::from_millis(50)).map(|_| Message::MarqueeTick)
     }
 
     fn style(&self) -> Option<iced::theme::Style> {
@@ -394,14 +464,31 @@ impl cosmic::Application for RadioApp {
 }
 
 impl RadioApp {
+    fn resolve_pls_url(url: &str) -> Option<(String, String)> {
+        let content = if url.starts_with("http://") || url.starts_with("https://") {
+            reqwest::blocking::get(url).ok()?.text().ok()?
+        } else {
+            fs::read_to_string(url).ok()?
+        };
+        resolve_pls(&content)
+    }
+
     fn start_playback(&mut self) {
         if let Some(index) = self.current_station {
             if let Some(station) = self.flat_stations.get(index) {
                 if let Some(player) = &self.player {
-                    player.set_uri(Some(&station.url));
+                    let (stream_url, display_name) = if station.url.ends_with(".pls") {
+                        Self::resolve_pls_url(&station.url)
+                            .map(|(u, n)| (u, n))
+                            .unwrap_or_else(|| (station.url.clone(), station.name.clone()))
+                    } else {
+                        (station.url.clone(), station.name.clone())
+                    };
+
+                    player.set_uri(Some(&stream_url));
                     player.play();
                     player.set_volume(self.volume);
-                    eprintln!("Playing: {}", station.name);
+                    self.now_playing = display_name;
                 }
             }
         }
@@ -459,19 +546,14 @@ impl RadioApp {
 
     fn load_artwork(&mut self, index: usize) {
         if let Some(station) = self.flat_stations.get(index) {
-            let artwork_url = station
-                .artwork
-                .clone()
-                .unwrap_or_else(|| Self::derive_artwork_url(&station.url));
-
-            if artwork_url.is_empty() {
-                return;
-            }
+            let artwork_url = match &station.artwork {
+                Some(url) if !url.is_empty() => url.clone(),
+                _ => return,
+            };
 
             let cache_dir = Self::artwork_cache_dir();
             let cache_file = cache_dir.join(Self::cache_filename(&artwork_url));
 
-            // Check cache first
             if cache_file.exists() && Self::is_cache_fresh(&cache_file) {
                 if !self.station_artwork.contains_key(&index) {
                     self.station_artwork.insert(index, cache_file);
@@ -479,7 +561,6 @@ impl RadioApp {
                 return;
             }
 
-            // Download artwork in background
             let cache_dir_clone = cache_dir.clone();
             let cache_file_clone = cache_file.clone();
             tokio::spawn(async move {
@@ -508,25 +589,8 @@ impl RadioApp {
                 }
             });
 
-            // Store the path immediately (file will be downloaded)
             self.station_artwork.insert(index, cache_file);
         }
-    }
-
-    fn derive_artwork_url(stream_url: &str) -> String {
-        if stream_url.contains("somafm.com") {
-            // Extract station ID from URL like https://ice5.somafm.com/beatblender-256-mp3
-            let filename = stream_url.split('/').next_back().unwrap_or("").to_string();
-
-            // Get station ID (part before first "-")
-            let station_id = filename.split('-').next().unwrap_or("");
-
-            if !station_id.is_empty() {
-                // Use the SomaFM API artwork URL format
-                return format!("https://api.somafm.com/logos/256/{}-256.png", station_id);
-            }
-        }
-        String::new()
     }
 }
 
