@@ -154,10 +154,7 @@ impl cosmic::Application for RadioApp {
         let groups = config.groups;
 
         // Flatten stations for playback indexing
-        let flat_stations: Vec<Station> = groups
-            .iter()
-            .flat_map(|g| g.stations.clone())
-            .collect();
+        let flat_stations: Vec<Station> = groups.iter().flat_map(|g| g.stations.clone()).collect();
 
         // Initialize all groups as expanded (not collapsed)
         let group_collapsed = vec![false; groups.len()];
@@ -239,7 +236,26 @@ impl cosmic::Application for RadioApp {
             }
             Message::EditStations => {
                 let path = config_path();
-                let _ = std::process::Command::new("xdg-open").arg(path).spawn();
+
+                // 1. Check Env Vars (Respects power users)
+                let editor_cmd = std::env::var("VISUAL").or_else(|_| std::env::var("EDITOR"));
+
+                match editor_cmd {
+                    Ok(cmd) => {
+                        let _ = std::process::Command::new(cmd).arg(path).spawn();
+                    }
+                    Err(_) => {
+                        // 2. Env Vars not set? Try launching COSMIC Edit directly.
+                        // This bypasses the broken xdg-open MIME logic on Pop!_OS.
+                        let status = std::process::Command::new("cosmic-edit").arg(&path).spawn();
+
+                        // 3. Last resort: if cosmic-edit fails (maybe they uninstalled it),
+                        // then use xdg-open.
+                        if status.is_err() {
+                            let _ = std::process::Command::new("xdg-open").arg(path).spawn();
+                        }
+                    }
+                }
             }
             Message::ToggleGroupCollapse(index) => {
                 if index < self.group_collapsed.len() {
@@ -303,7 +319,11 @@ impl cosmic::Application for RadioApp {
 
             for (group_idx, group) in self.groups.iter().enumerate() {
                 // Group header with collapse toggle
-                let collapse_icon = if self.group_collapsed[group_idx] { "▶" } else { "▼" };
+                let collapse_icon = if self.group_collapsed[group_idx] {
+                    "▶"
+                } else {
+                    "▼"
+                };
                 let group_header = row![
                     text::body(&group.name).size(12),
                     iced::widget::Space::new().width(iced::Length::Fill),
@@ -496,15 +516,11 @@ impl RadioApp {
     fn derive_artwork_url(stream_url: &str) -> String {
         if stream_url.contains("somafm.com") {
             // Extract station ID from URL like https://ice5.somafm.com/beatblender-256-mp3
-            let filename = stream_url
-                .split('/')
-                .next_back()
-                .unwrap_or("")
-                .to_string();
-            
+            let filename = stream_url.split('/').next_back().unwrap_or("").to_string();
+
             // Get station ID (part before first "-")
             let station_id = filename.split('-').next().unwrap_or("");
-            
+
             if !station_id.is_empty() {
                 // Use the SomaFM API artwork URL format
                 return format!("https://api.somafm.com/logos/256/{}-256.png", station_id);
