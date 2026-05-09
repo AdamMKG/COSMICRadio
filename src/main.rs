@@ -380,12 +380,6 @@ impl cosmic::Application for RadioApp {
                 .spacing(8)
                 .align_y(Alignment::Center);
 
-            let title_row = row![
-                text::title3("COSMIC Radio"),
-                iced::widget::Space::new().width(iced::Length::Fill),
-            ]
-            .align_y(Alignment::Center);
-
             let mut ui_elements: Vec<Element<'_, Message>> = Vec::new();
             let mut flat_idx: usize = 0;
 
@@ -430,14 +424,13 @@ impl cosmic::Application for RadioApp {
             }
 
             let content = column![
-                title_row,
                 now_playing_row,
                 divider::horizontal::default(),
                 row![play_button.width(iced::Length::Fill),].spacing(8),
                 text::body("Volume").size(12),
                 slider(0.0..=1.0, self.volume, Message::SetVolume).step(0.01),
                 divider::horizontal::default(),
-                scrollable(column(ui_elements).spacing(4).padding(8))
+                scrollable(column(ui_elements).spacing(4).padding([4, 12, 4, 8]))
                     .height(iced::Length::Fixed(300.0)),
                 divider::horizontal::default(),
                 button::text("Edit Stations")
