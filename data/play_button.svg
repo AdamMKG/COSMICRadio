@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
+  <!-- Play Triangle with rounded corners, solid grey fill, and white outline -->
+  <path d="M7 6.75C7 5.79 8.04 5.19 8.87 5.67L18.44 11.22C19.27 11.7 19.27 12.9 18.44 13.38L8.87 18.93C8.04 19.41 7 18.81 7 17.85V6.75Z" fill="#888888" stroke="white" stroke-width="2" stroke-linejoin="round" />
+</svg>
