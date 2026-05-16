@@ -113,12 +113,12 @@ impl ConfigManager {
         &self.flat
     }
 
-    pub fn add_station(&mut self, station: Station) {
-        if let Some(fav_group) = self.groups.iter_mut().find(|g| g.name == "Favourites") {
-            fav_group.stations.push(station);
+    pub fn add_to_group(&mut self, station: Station, group_name: &str) {
+        if let Some(group) = self.groups.iter_mut().find(|g| g.name == group_name) {
+            group.stations.push(station);
         } else {
             self.groups.push(StationGroup {
-                name: "Favourites".to_string(),
+                name: group_name.to_string(),
                 stations: vec![station],
             });
         }

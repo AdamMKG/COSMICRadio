@@ -6,7 +6,7 @@ use cosmic::{
     iced::{
         self,
         platform_specific::shell::commands::popup::{destroy_popup, get_popup},
-        widget::{column, container, image, row, svg, tooltip},
+        widget::{column, container, image, row, svg, text_input, tooltip},
         window, Alignment, Subscription,
     },
     widget::{button, divider, scrollable, slider, text},
@@ -15,11 +15,15 @@ use cosmic::{
 use std::path::PathBuf;
 use std::time::Duration;
 
-const MARQUEE_MAX_CHARS: usize = 29;
-const MARQUEE_END_PAUSE_TICKS: f64 = 20.0;
+const MARQUEE_MAX_CHARS: usize = 33;
+const MARQUEE_SCROLL_INTERVAL: u32 = 3;
+const MARQUEE_START_PAUSE_TICKS: f64 = 60.0;
+const MARQUEE_END_PAUSE_TICKS: f64 = 60.0;
 
 const PLAY_SVG: &[u8] = include_bytes!("../data/play_button.svg");
 const STOP_SVG: &[u8] = include_bytes!("../data/stop_button.svg");
+const ADD_SVG: &[u8] = include_bytes!("../data/add_station.svg");
+const ARTWORK_PLACEHOLDER: &[u8] = include_bytes!("../data/station_artwork_placeholder.png");
 
 pub struct RadioApp {
     core: cosmic::app::Core,
@@ -33,7 +37,12 @@ pub struct RadioApp {
     group_collapsed: Vec<bool>,
     now_playing: String,
     scroll_offset: f64,
+    scroll_tick_counter: u32,
     show_add_menu: bool,
+    show_url_input: bool,
+    url_input: String,
+    temp_stream_url: Option<String>,
+    temp_stream_name: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -45,9 +54,11 @@ pub enum Message {
     SetVolume(f64),
     ToggleAddMenu,
     AddCurrentlyPlaying,
-    AddViaUrl,
+    PlayFromUrl,
     EditStationsToml,
     ToggleGroupCollapse(usize),
+    UrlInputChanged(String),
+    SubmitUrl,
     MarqueeTick,
 }
 
@@ -83,7 +94,12 @@ impl cosmic::Application for RadioApp {
                 group_collapsed,
                 now_playing: String::new(),
                 scroll_offset: 0.0,
+                scroll_tick_counter: 0,
                 show_add_menu: false,
+                show_url_input: false,
+                url_input: String::new(),
+                temp_stream_url: None,
+                temp_stream_name: None,
             },
             Task::none(),
         )
@@ -130,8 +146,11 @@ impl cosmic::Application for RadioApp {
             }
             Message::SelectStation(index) => {
                 self.current_station = Some(index);
+                self.temp_stream_url = None;
+                self.temp_stream_name = None;
                 self.is_playing = true;
                 self.scroll_offset = 0.0;
+                self.scroll_tick_counter = 0;
 
                 if let Some(station) = self.config.flat_stations().get(index) {
                     let (_, display_name) = self.audio.play(&station.url, &station.name);
@@ -149,12 +168,18 @@ impl cosmic::Application for RadioApp {
                 self.is_playing = !self.is_playing;
                 if self.is_playing {
                     self.scroll_offset = 0.0;
+                    self.scroll_tick_counter = 0;
                     if let Some(index) = self.current_station {
                         if let Some(station) = self.config.flat_stations().get(index) {
                             let (_, display_name) = self.audio.play(&station.url, &station.name);
                             self.now_playing = display_name;
                             self.audio.set_volume(self.volume);
                         }
+                    } else if let Some(ref url) = self.temp_stream_url {
+                        let name = self.temp_stream_name.clone().unwrap_or_default();
+                        let (_, display_name) = self.audio.play(url, &name);
+                        self.now_playing = display_name;
+                        self.audio.set_volume(self.volume);
                     }
                 } else {
                     self.audio.stop();
@@ -170,32 +195,71 @@ impl cosmic::Application for RadioApp {
             Message::AddCurrentlyPlaying => {
                 self.show_add_menu = false;
 
-                if let Some(index) = self.current_station {
-                    if let Some(station) = self.config.flat_stations().get(index) {
-                        let exists = self
-                            .config
-                            .groups()
-                            .iter()
-                            .flat_map(|g| &g.stations)
-                            .any(|s| s.name == station.name || s.url == station.url);
-
-                        if !exists {
-                            let new_station = Station {
-                                name: station.name.clone(),
-                                url: station.url.clone(),
-                                artwork: station.artwork.clone(),
-                                auto_add: Some(true),
-                            };
-                            self.config.add_station(new_station);
-                            while self.group_collapsed.len() < self.config.group_count() {
-                                self.group_collapsed.push(false);
-                            }
+                let (station_name, station_url, station_artwork) =
+                    if let Some(index) = self.current_station {
+                        if let Some(station) = self.config.flat_stations().get(index) {
+                            (station.name.clone(), station.url.clone(), station.artwork.clone())
+                        } else {
+                            return Task::none();
                         }
+                    } else if let Some(ref url) = self.temp_stream_url {
+                        let name = self
+                            .temp_stream_name
+                            .clone()
+                            .unwrap_or_else(|| Self::derive_name_from_url(url));
+                        (name, url.clone(), None)
+                    } else {
+                        return Task::none();
+                    };
+
+                let exists = self
+                    .config
+                    .groups()
+                    .iter()
+                    .flat_map(|g| &g.stations)
+                    .any(|s| s.name == station_name || s.url == station_url);
+
+                if !exists {
+                    let new_station = Station {
+                        name: station_name,
+                        url: station_url,
+                        artwork: station_artwork,
+                        auto_add: Some(true),
+                    };
+                    self.config.add_to_group(new_station, "Uncategorised");
+                    while self.group_collapsed.len() < self.config.group_count() {
+                        self.group_collapsed.push(false);
                     }
                 }
             }
-            Message::AddViaUrl => {
+            Message::PlayFromUrl => {
                 self.show_add_menu = false;
+                self.show_url_input = !self.show_url_input;
+            }
+            Message::UrlInputChanged(input) => {
+                self.url_input = input;
+            }
+            Message::SubmitUrl => {
+                let mut url = self.url_input.trim().to_string();
+                if url.is_empty() {
+                    return Task::none();
+                }
+                if !url.starts_with("http://") && !url.starts_with("https://") {
+                    url = format!("https://{}", url);
+                }
+                self.show_url_input = false;
+                self.url_input.clear();
+                self.current_station = None;
+                self.is_playing = true;
+                self.scroll_offset = 0.0;
+                self.scroll_tick_counter = 0;
+
+                let fallback_name = Self::derive_name_from_url(&url);
+                let (stream_url, display_name) = self.audio.play(&url, &fallback_name);
+                self.temp_stream_url = Some(stream_url);
+                self.temp_stream_name = Some(display_name.clone());
+                self.now_playing = display_name;
+                self.audio.set_volume(self.volume);
             }
             Message::EditStationsToml => {
                 self.show_add_menu = false;
@@ -227,19 +291,35 @@ impl cosmic::Application for RadioApp {
                 if let Some(new_title) = self.audio.take_metadata() {
                     self.now_playing = new_title;
                     self.scroll_offset = 0.0;
+                    self.scroll_tick_counter = 0;
                 }
 
                 if !self.now_playing.is_empty() {
                     let char_count = self.now_playing.chars().count();
                     if char_count > MARQUEE_MAX_CHARS {
-                        let max_offset = (char_count - MARQUEE_MAX_CHARS) as f64;
-                        let total_cycle = max_offset + MARQUEE_END_PAUSE_TICKS;
-                        if self.scroll_offset >= total_cycle {
-                            self.scroll_offset = 0.0;
-                        } else if self.scroll_offset < max_offset {
-                            self.scroll_offset += 1.0;
+                        let max_offset = (char_count - MARQUEE_MAX_CHARS) as u32;
+                        let scroll_phase_ticks = (max_offset + 1) * MARQUEE_SCROLL_INTERVAL;
+                        let total_cycle = MARQUEE_START_PAUSE_TICKS as u32
+                            + scroll_phase_ticks
+                            + MARQUEE_END_PAUSE_TICKS as u32;
+
+                        if self.scroll_tick_counter < MARQUEE_START_PAUSE_TICKS as u32 {
+                            self.scroll_tick_counter += 1;
+                        } else if self.scroll_tick_counter
+                            < MARQUEE_START_PAUSE_TICKS as u32 + scroll_phase_ticks
+                        {
+                            let elapsed = self.scroll_tick_counter
+                                - MARQUEE_START_PAUSE_TICKS as u32;
+                            let new_offset = (elapsed / MARQUEE_SCROLL_INTERVAL) as f64;
+                            if new_offset > self.scroll_offset {
+                                self.scroll_offset = new_offset;
+                            }
+                            self.scroll_tick_counter += 1;
+                        } else if self.scroll_tick_counter < total_cycle {
+                            self.scroll_tick_counter += 1;
                         } else {
-                            self.scroll_offset += 1.0;
+                            self.scroll_offset = 0.0;
+                            self.scroll_tick_counter = 0;
                         }
                     }
                 }
@@ -268,7 +348,8 @@ impl cosmic::Application for RadioApp {
 
             let current_artwork = self.current_station.and_then(|i| self.artwork.get(&i));
 
-            let show_play_icon = self.current_station.is_none() || !self.is_playing;
+            let show_play_icon =
+                (self.current_station.is_none() && self.temp_stream_url.is_none()) || !self.is_playing;
             let icon_bytes = if show_play_icon { PLAY_SVG } else { STOP_SVG };
             let icon_label = if show_play_icon { "Play" } else { "Stop" };
             let icon_handle = svg::Handle::from_memory(icon_bytes);
@@ -286,9 +367,7 @@ impl cosmic::Application for RadioApp {
 
             let mut now_playing_elements: Vec<Element<'_, Message>> = Vec::new();
 
-            if let Some(art_path) = current_artwork {
-                now_playing_elements.push(Self::artwork_image(Some(art_path), 48));
-            }
+            now_playing_elements.push(Self::artwork_image(current_artwork, 48));
 
             let display_text = if self.now_playing.is_empty() {
                 current_station_name.to_string()
@@ -317,6 +396,11 @@ impl cosmic::Application for RadioApp {
 
             now_playing_elements.push(now_playing_element);
             now_playing_elements.push(play_button.into());
+            now_playing_elements.push(
+                iced::widget::Space::new()
+                    .width(iced::Length::Fixed(4.0))
+                    .into(),
+            );
 
             let now_playing_row =
                 row(now_playing_elements).spacing(8).align_y(Alignment::Center);
@@ -369,12 +453,25 @@ impl cosmic::Application for RadioApp {
                     button::text("Add currently playing")
                         .on_press(Message::AddCurrentlyPlaying)
                         .width(iced::Length::Fill),
-                    button::text("Add via URL")
-                        .on_press(Message::AddViaUrl)
+                    button::text("Play from URL")
+                        .on_press(Message::PlayFromUrl)
                         .width(iced::Length::Fill),
                     button::text("Edit stations.toml")
                         .on_press(Message::EditStationsToml)
                         .width(iced::Length::Fill),
+                ]
+                .spacing(4)
+                .into()
+            } else {
+                column![].into()
+            };
+
+            let url_input_section: Element<'_, Message> = if self.show_url_input {
+                column![
+                    text_input::TextInput::new("https://...", &self.url_input)
+                        .on_input(Message::UrlInputChanged)
+                        .on_submit(Message::SubmitUrl),
+                    button::text("Play").on_press(Message::SubmitUrl),
                 ]
                 .spacing(4)
                 .into()
@@ -392,12 +489,17 @@ impl cosmic::Application for RadioApp {
                     .height(iced::Length::Fixed(300.0)),
                 divider::horizontal::default(),
                 row![
-                    button::custom(text::body("+"))
-                        .on_press(Message::ToggleAddMenu)
-                        .padding(4),
+                    button::custom(
+                        svg(svg::Handle::from_memory(ADD_SVG))
+                            .width(iced::Length::Fixed(24.0))
+                            .height(iced::Length::Fixed(24.0)),
+                    )
+                    .on_press(Message::ToggleAddMenu)
+                    .padding(4),
                 ]
                 .spacing(8),
                 add_menu,
+                url_input_section,
             ]
             .align_x(Alignment::Start)
             .padding(8)
@@ -420,21 +522,38 @@ impl cosmic::Application for RadioApp {
 
 impl RadioApp {
     fn artwork_image(artwork_path: Option<&PathBuf>, size: u16) -> Element<'static, Message> {
-        if let Some(path) = artwork_path {
+        let handle = if let Some(path) = artwork_path {
             if path.exists() {
-                image(image::Handle::from_path(path.clone()))
-                    .width(iced::Length::Fixed(size as f32))
-                    .height(iced::Length::Fixed(size as f32))
-                    .into()
+                image::Handle::from_path(path.clone())
             } else {
-                iced::widget::Space::new()
-                    .width(iced::Length::Fixed(size as f32))
-                    .into()
+                image::Handle::from_bytes(ARTWORK_PLACEHOLDER)
             }
         } else {
-            iced::widget::Space::new()
-                .width(iced::Length::Fixed(size as f32))
-                .into()
-        }
+            image::Handle::from_bytes(ARTWORK_PLACEHOLDER)
+        };
+        image(handle)
+            .width(iced::Length::Fixed(size as f32))
+            .height(iced::Length::Fixed(size as f32))
+            .into()
+    }
+
+    fn derive_name_from_url(url: &str) -> String {
+        url.split('?')
+            .next()
+            .unwrap_or(url)
+            .split('/')
+            .filter(|s| !s.is_empty())
+            .last()
+            .and_then(|s| {
+                let stem = s.rsplit_once('.').map(|(name, _)| name).unwrap_or(s);
+                let cleaned = stem.replace(['-', '_'], " ").trim().to_string();
+                if cleaned.is_empty() { None } else { Some(cleaned) }
+            })
+            .unwrap_or_else(|| {
+                url.split('/')
+                    .nth(2)
+                    .unwrap_or("Unknown")
+                    .to_string()
+            })
     }
 }

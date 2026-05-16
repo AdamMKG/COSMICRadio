@@ -117,31 +117,62 @@ src/main.rs (599 lines)
 - `src/artwork.rs` — new file (ArtworkCache, download, cache)
 - `src/app.rs` — new file (RadioApp, Message, cosmic::Application impl)
 
-## Session 3b — 15 May 2026
+## Session 4 — 16 May 2026
 
 ### Changes Made This Session
 
-#### Play/Stop icon button (replaces text button)
-- Replaced the text-based "Play"/"Stop" button with SVG icons embedded at compile time via `include_bytes!("../data/play_button.svg")` and `include_bytes!("../data/stop_button.svg")`.
-- Icons are rendered using `iced::widget::svg` at 24×24px inside a `button::custom()` with 4px padding.
-- Added a `tooltip::Tooltip` wrapper so hovering over the button shows "Play" or "Stop" for accessibility.
-- Button logic: if no station is selected, the play icon is always shown (never switches to stop). If a station is selected, the icon toggles between play (paused) and stop (playing).
+#### Marquee scrolling improvements
+- Added `MARQUEE_SCROLL_INTERVAL = 3` — scroll advances every 3rd tick (150ms/char, ~3× slower)
+- Added `MARQUEE_START_PAUSE_TICKS = 60.0` — 3-second pause before scrolling begins
+- Increased `MARQUEE_END_PAUSE_TICKS` from 20 to 60.0 — 3-second pause at end of scroll (3× longer)
+- Added `scroll_tick_counter: u32` to track tick position in the pause→scroll→pause cycle
+- Split marquee cycle into three phases: start pause, scrolling, end pause
+- Increased `MARQUEE_MAX_CHARS` from 29 to 33 — shows 4 more characters before truncation
 
-#### Layout reorganisation
-- Moved the play/stop button from its own dedicated row (below the now-playing row) into the now-playing row itself, right-aligned.
-- The now-playing row layout is now `[artwork | marquee text (Fill) | play/stop button]` — the marquee text uses `iced::Length::Fill` so it expands to fill the remaining horizontal space between the artwork and the button.
-- This removed the separate play button row from the content column, reducing vertical space usage while keeping the same overall popup dimensions.
-- The marquee text now has less horizontal space available, which is acceptable to maintain the overall popup width.
+#### Layout and button fixes
+- Reverted text container width from `Fixed(220.0)` back to `Fill` so the play/stop button stays right-aligned regardless of artwork presence or text length
+- Added 4px spacer after the play/stop button so its right edge aligns with the station list scrollbar (total 12px gap from button to popup right edge)
+- Replaced "+" unicode character with `add_station.svg` SVG icon, matching the style of the play/stop buttons
+
+#### Play from URL feature
+- Renamed "Add via URL" → "Play from URL" in the add menu
+- Added `show_url_input`, `url_input`, `temp_stream_url`, `temp_stream_name` state fields
+- Added `UrlInputChanged(String)` and `SubmitUrl` message variants
+- When "Play from URL" is clicked, a text input and "Play" button appear; the user pastes a URL and the stream plays immediately
+- `SubmitUrl` auto-prepends `https://` if no protocol is present in the pasted URL
+- PLS URLs are resolved transparently via the existing `AudioBackend::play()` path
+- `TogglePlayback` now resumes URL-played streams (not just config-station streams)
+- `SelectStation` clears temp stream state
+
+#### Add currently playing — now supports URL streams
+- "Add currently playing" now handles both config-station streams (`current_station`) and URL-played streams (`temp_stream_url`)
+- Stations are added to an "Uncategorised" group (created if absent) instead of "Favourites"
+- `ConfigManager::add_station()` renamed to `add_to_group(station, group_name)` with a configurable group name
+- Station names for URL streams are derived from the URL path/hostname via `derive_name_from_url()`, or from the PLS `Title1` field when available
+
+#### Placeholder artwork
+- Added `ARTWORK_PLACEHOLDER` constant embedding `station_artwork_placeholder.png`
+- `artwork_image()` now renders the placeholder PNG when no artwork path is provided or the cache file is missing, instead of an empty `Space`
+- The now-playing row always shows artwork (real or placeholder), keeping the layout consistent
+
+#### Play/Stop button for URL streams
+- Fixed the play/stop icon logic: now checks `temp_stream_url` in addition to `current_station`, so the button correctly toggles between Play and Stop for URL-played streams
 
 ### Files Changed
-- `src/app.rs` — imports (svg, tooltip), constants (PLAY_SVG, STOP_SVG), now_playing_row layout, play button icon + tooltip, content column
+- `data/add_station.svg` — new SVG icon for the add station button
+- `data/fm_radio_icon.svg` — new radio icon asset
+- `data/station_artwork_placeholder.png` — new placeholder artwork for stations without artwork
+- `data/com.system76.CosmicRadio.desktop` — removed (moved to project root)
+- `data/radio_icon.svg` — removed (replaced by fm_radio_icon.svg)
+- `src/app.rs` — all marquee, layout, Play from URL, artwork placeholder, and play/stop button changes
+- `src/config.rs` — `add_station()` → `add_to_group(station, group_name)`
 
 ### Current Architecture
 ```
 src/
-├── main.rs      (3 lines)  — cosmic::applet::run::<RadioApp>
+├── main.rs      (8 lines)   — cosmic::applet::run::<RadioApp>
 ├── config.rs    (137 lines) — ConfigManager, types, TOML I/O
 ├── audio.rs     (100 lines) — AudioBackend, GStreamer, PLS, metadata
 ├── artwork.rs   (89 lines)  — ArtworkCache, async download, hashing
-└── app.rs       (440 lines) — RadioApp, Message, UI, cosmic::Application
+└── app.rs       (559 lines) — RadioApp, Message, UI, cosmic::Application
 ```
