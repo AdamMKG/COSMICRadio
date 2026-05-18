@@ -1,0 +1,30 @@
+Source: cosmic-radio
+Section: sound
+Priority: optional
+Maintainer: Pop OS Team <maintainers@system76.com>
+Build-Depends: debhelper-compat (= 13),
+               just,
+               cargo,
+               rustc (>= 1.75),
+               libgstreamer1.0-dev,
+               libgstreamer-plugins-base1.0-dev,
+               pkg-config,
+               libssl-dev,
+               libwayland-dev
+Standards-Version: 4.6.2
+Homepage: https://github.com/pop-os/cosmic-radio
+Rules-Requires-Root: no
+
+Package: cosmic-radio
+Architecture: any
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         gstreamer1.0-plugins-base,
+         gstreamer1.0-plugins-good,
+         gstreamer1.0-plugins-bad
+Description: COSMIC desktop panel applet for internet radio streaming
+ A minimalist COSMIC panel applet for streaming internet radio stations.
+ Features include station management via TOML config, now-playing metadata
+ display, volume control, PLS playlist support, and album artwork caching.
+ .
+ This applet integrates natively with the COSMIC desktop environment.

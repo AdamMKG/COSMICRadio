@@ -1,6 +1,7 @@
 use crate::artwork::ArtworkCache;
 use crate::audio::AudioBackend;
-use crate::config::{ConfigManager, Station};
+use crate::config::{ConfigManager, Station, StationGroup};
+use crate::url_handler;
 use cosmic::{
     app,
     iced::{
@@ -20,10 +21,10 @@ const MARQUEE_SCROLL_INTERVAL: u32 = 3;
 const MARQUEE_START_PAUSE_TICKS: f64 = 60.0;
 const MARQUEE_END_PAUSE_TICKS: f64 = 60.0;
 
-const PLAY_SVG: &[u8] = include_bytes!("../data/play_button.svg");
-const STOP_SVG: &[u8] = include_bytes!("../data/stop_button.svg");
-const ADD_SVG: &[u8] = include_bytes!("../data/add_station.svg");
-const ARTWORK_PLACEHOLDER: &[u8] = include_bytes!("../data/cosmic-broadcast-mic-symbolic.svg");
+const PLAY_SVG: &[u8] = include_bytes!("../data/icons/scalable/status/play-button-symbolic.svg");
+const STOP_SVG: &[u8] = include_bytes!("../data/icons/scalable/status/stop-button-symbolic.svg");
+const ADD_SVG: &[u8] = include_bytes!("../data/icons/scalable/status/add-station-symbolic.svg");
+const ARTWORK_PLACEHOLDER: &[u8] = include_bytes!("../data/icons/scalable/status/mic-symbolic.svg");
 
 pub struct RadioApp {
     core: cosmic::app::Core,
@@ -201,39 +202,77 @@ impl cosmic::Application for RadioApp {
                 }
                 self.show_url_input = false;
                 self.url_input.clear();
-                self.current_station = None;
-                self.is_playing = true;
-                self.scroll_offset = 0.0;
-                self.scroll_tick_counter = 0;
 
-                let fallback_name = Self::derive_name_from_url(&url);
-                let (stream_url, display_name) = self.audio.play(&url, &fallback_name);
-                let station_url = stream_url.clone();
-                self.temp_stream_url = Some(stream_url);
-                self.temp_stream_name = Some(display_name.clone());
-                self.now_playing = display_name;
-                self.audio.set_volume(self.volume);
+                match url_handler::resolve_url(&url) {
+                    Err(msg) => {
+                        self.now_playing = msg;
+                    }
+                    Ok(source) => {
+                        self.current_station = None;
+                        self.is_playing = true;
+                        self.scroll_offset = 0.0;
+                        self.scroll_tick_counter = 0;
 
-                let station_name = self
-                    .temp_stream_name
-                    .clone()
-                    .unwrap_or_else(|| Self::derive_name_from_url(&url));
-                let exists = self
-                    .config
-                    .groups()
-                    .iter()
-                    .flat_map(|g| &g.stations)
-                    .any(|s| s.name == station_name || s.url == station_url);
-                if !exists {
-                    let new_station = Station {
-                        name: station_name,
-                        url: station_url,
-                        artwork: None,
-                        auto_add: Some(true),
-                    };
-                    self.config.add_to_group(new_station, "Uncategorised");
-                    while self.group_collapsed.len() < self.config.group_count() {
-                        self.group_collapsed.push(false);
+                        if source.channels.is_empty() {
+                            self.now_playing = "No channels found".to_string();
+                            return Task::none();
+                        }
+
+                        let first = &source.channels[0];
+                        let (stream_url, display_name) =
+                            self.audio.play(&first.stream_url, &first.name);
+                        let resolved_url = stream_url.clone();
+                        self.temp_stream_url = Some(stream_url);
+                        self.temp_stream_name = Some(display_name.clone());
+                        self.now_playing = display_name;
+                        self.audio.set_volume(self.volume);
+
+                        if source.channels.len() == 1
+                            && source.group_name == "Uncategorised"
+                        {
+                            let station_name = self
+                                .temp_stream_name
+                                .clone()
+                                .unwrap_or_else(|| url_handler::derive_name_from_url(&url));
+                            let exists = self
+                                .config
+                                .groups()
+                                .iter()
+                                .flat_map(|g| &g.stations)
+                                .any(|s| s.url == resolved_url || s.name == station_name);
+                            if !exists {
+                                let new_station = Station {
+                                    name: station_name,
+                                    url: resolved_url,
+                                    artwork: first.artwork_url.clone(),
+                                    auto_add: Some(true),
+                                };
+                                self.config
+                                    .add_to_group(new_station, "Uncategorised");
+                                while self.group_collapsed.len() < self.config.group_count() {
+                                    self.group_collapsed.push(false);
+                                }
+                            }
+                        } else {
+                            let group_name = source.group_name.clone();
+                            let stations: Vec<Station> = source
+                                .channels
+                                .iter()
+                                .map(|ch| Station {
+                                    name: ch.name.clone(),
+                                    url: ch.stream_url.clone(),
+                                    artwork: ch.artwork_url.clone(),
+                                    auto_add: Some(true),
+                                })
+                                .collect();
+                            self.config.add_group(StationGroup {
+                                name: group_name,
+                                stations,
+                            });
+                            while self.group_collapsed.len() < self.config.group_count() {
+                                self.group_collapsed.push(false);
+                            }
+                        }
                     }
                 }
             }
@@ -303,7 +342,7 @@ impl cosmic::Application for RadioApp {
     fn view(&self) -> Element<'_, Message> {
         self.core
             .applet
-            .icon_button("radio_icon")
+            .icon_button("com.system76.CosmicRadio-symbolic")
             .on_press_down(Message::TogglePopup)
             .into()
     }
@@ -494,22 +533,5 @@ impl RadioApp {
             .into()
     }
 
-    fn derive_name_from_url(url: &str) -> String {
-        url.split('?')
-            .next()
-            .unwrap_or(url)
-            .split('/')
-            .filter(|s| !s.is_empty())
-            .last()
-            .and_then(|s| {
-                let stem = s.rsplit_once('.').map(|(name, _)| name).unwrap_or(s);
-                let cleaned = stem.replace(['-', '_'], " ").trim().to_string();
-                if cleaned.is_empty() {
-                    None
-                } else {
-                    Some(cleaned)
-                }
-            })
-            .unwrap_or_else(|| url.split('/').nth(2).unwrap_or("Unknown").to_string())
-    }
+
 }

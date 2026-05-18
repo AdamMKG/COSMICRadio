@@ -126,6 +126,20 @@ impl ConfigManager {
         self.save();
     }
 
+    pub fn add_group(&mut self, group: StationGroup) {
+        if let Some(existing) = self.groups.iter_mut().find(|g| g.name == group.name) {
+            for station in group.stations {
+                if !existing.stations.iter().any(|s| s.url == station.url) {
+                    existing.stations.push(station);
+                }
+            }
+        } else {
+            self.groups.push(group);
+        }
+        self.flat = self.groups.iter().flat_map(|g| g.stations.clone()).collect();
+        self.save();
+    }
+
     fn save(&self) {
         let config = Config {
             groups: self.groups.clone(),

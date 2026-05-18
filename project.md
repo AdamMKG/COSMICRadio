@@ -158,6 +158,14 @@ src/main.rs (599 lines)
 #### Play/Stop button for URL streams
 - Fixed the play/stop icon logic: now checks `temp_stream_url` in addition to `current_station`, so the button correctly toggles between Play and Stop for URL-played streams
 
+#### URL handler module (uncommitted until Session 5)
+- Extracted URL resolution logic (SomaFM JSON, Radio Browser JSON, PLS, raw audio URLs) into `src/url_handler.rs`
+- Added `serde_json` dependency for JSON API parsing
+- `SubmitUrl` now delegates to `url_handler::resolve_url()` which auto-detects content type and parses accordingly
+- Multiple-channel sources (SomaFM, Radio Browser) create full station groups
+- Single-channel or uncategorised sources add to "Uncategorised" group with `auto_add = true`
+- Added `ConfigManager::add_group()` for bulk group insertion
+
 ### Files Changed
 - `data/add_station.svg` — new SVG icon for the add station button
 - `data/fm_radio_icon.svg` — new radio icon asset
@@ -165,14 +173,129 @@ src/main.rs (599 lines)
 - `data/com.system76.CosmicRadio.desktop` — removed (moved to project root)
 - `data/radio_icon.svg` — removed (replaced by fm_radio_icon.svg)
 - `src/app.rs` — all marquee, layout, Play from URL, artwork placeholder, and play/stop button changes
-- `src/config.rs` — `add_station()` → `add_to_group(station, group_name)`
+- `src/config.rs` — `add_station()` → `add_to_group(station, group_name)`, added `add_group()`
+- `src/url_handler.rs` — new file (URL resolution, SomaFM/Radio Browser/PLS parsing)
+- `Cargo.toml` — added `serde_json` dependency
 
 ### Current Architecture
 ```
 src/
 ├── main.rs      (8 lines)   — cosmic::applet::run::<RadioApp>
-├── config.rs    (137 lines) — ConfigManager, types, TOML I/O
+├── config.rs    (155 lines) — ConfigManager, types, TOML I/O
 ├── audio.rs     (100 lines) — AudioBackend, GStreamer, PLS, metadata
 ├── artwork.rs   (89 lines)  — ArtworkCache, async download, hashing
-└── app.rs       (559 lines) — RadioApp, Message, UI, cosmic::Application
+├── app.rs       (537 lines) — RadioApp, Message, UI, cosmic::Application
+└── url_handler.rs (326 lines) — URL resolution, SomaFM/Radio Browser/PLS/raw audio
+```
+
+## Session 5 — 19 May 2026
+
+### Changes Made This Session
+
+#### Pop OS readiness — architecture overhaul for official inclusion
+
+Prepared the applet for inclusion in Pop OS as an official tray applet. All changes follow the conventions established by `pop-os/cosmic-applets`.
+
+#### SVG icon compliance (symbolic naming + theming)
+
+All SVG files were renamed with the `-symbolic` suffix per the freedesktop/COSMIC symbolic icon convention, and moved into the proper hicolor directory structure:
+
+```
+data/icons/scalable/
+├── apps/
+│   └── com.system76.CosmicRadio-symbolic.svg   (panel applet icon)
+└── status/
+    ├── play-button-symbolic.svg                 (play control)
+    ├── stop-button-symbolic.svg                 (stop control)
+    ├── add-station-symbolic.svg                 (add station action)
+    └── mic-symbolic.svg                         (artwork placeholder)
+```
+
+Every SVG's `stroke` and `fill` attributes were changed from hardcoded `"white"`/`"#888888"` to `"currentColor"`, making icons properly respond to the OS theme (light/dark/high-contrast).
+
+#### Desktop file
+
+Created `data/com.system76.CosmicRadio.desktop` following the official COSMIC applet desktop entry pattern with:
+- `Icon=com.system76.CosmicRadio-symbolic`
+- `X-CosmicApplet=true`, `X-CosmicShrinkable=true`, `X-CosmicHoverPopup=Auto`, `X-OverflowPriority=10`
+- `NoDisplay=true` (hides from app launcher — it's a panel applet)
+
+#### AppStream metadata
+
+Created `data/com.system76.CosmicRadio.metainfo.xml` required for Pop!_OS Software Center listing.
+
+#### Justfile overhaul
+
+Replaced the ad-hoc install script with a proper `appid`-based justfile matching COSMIC applet standards:
+- `build`, `install`, `run`, `clean`, `check` (clippy), `all` recipes
+- `install` uses `install -Dm0644` for proper destdir/rootdir support
+- Installs to correct hicolor paths: `hicolor/scalable/apps/` and `hicolor/scalable/status/`
+
+#### Debian packaging
+
+Created full `debian/` directory for `dpkg-buildpackage`:
+- `debian/control` — build deps (cargo, rustc, libgstreamer, libwayland, etc.) and runtime deps
+- `debian/rules` — delegates to `just build` / `just install`
+- `debian/changelog` — initial release entry
+- `debian/copyright` — GPL-3.0-or-later
+
+#### Code updates
+
+- `src/app.rs` — updated `include_bytes!` paths to new SVG locations; changed `icon_button("radio_icon")` → `icon_button("com.system76.CosmicRadio-symbolic")`
+- `src/config.rs` — removed unused `group_exists()` method to eliminate the only build warning
+- `.gitignore` — added editor backup patterns (`*~`, `*.swp`, `*.swo`) and debian build artifacts
+
+#### Cleanup
+
+- Removed 5 backup files (`*.svg~`, `cosmic-radio.desktop~`) and unused `station_artwork_placeholder.png`
+- Removed old SVGs from `data/` root (now living under `data/icons/scalable/`)
+
+### Files Changed
+- `data/icons/scalable/apps/com.system76.CosmicRadio-symbolic.svg` — new (was `data/fm_radio_icon.svg`)
+- `data/icons/scalable/status/play-button-symbolic.svg` — new (was `data/play_button.svg`)
+- `data/icons/scalable/status/stop-button-symbolic.svg` — new (was `data/stop_button.svg`)
+- `data/icons/scalable/status/add-station-symbolic.svg` — new (was `data/add_station.svg`)
+- `data/icons/scalable/status/mic-symbolic.svg` — new (was `data/cosmic-broadcast-mic-symbolic.svg`)
+- `data/com.system76.CosmicRadio.desktop` — new file
+- `data/com.system76.CosmicRadio.metainfo.xml` — new file
+- `debian/control` — new file
+- `debian/rules` — new file
+- `debian/changelog` — new file
+- `debian/copyright` — new file
+- `debian/source/format` — new file
+- `justfile` — rewritten with official COSMIC patterns
+- `src/app.rs` — SVG path references, icon button name updated
+- `src/config.rs` — removed unused `group_exists()` method
+- `.gitignore` — added backup file and debian artifact patterns
+- `data/*.svg~` — deleted (backup files)
+- `data/*.desktop~` — deleted (backup files)
+- `data/station_artwork_placeholder.png` — deleted (unused artifact)
+
+### Current Architecture
+```
+data/
+├── icons/scalable/
+│   ├── apps/
+│   │   └── com.system76.CosmicRadio-symbolic.svg
+│   └── status/
+│       ├── play-button-symbolic.svg
+│       ├── stop-button-symbolic.svg
+│       ├── add-station-symbolic.svg
+│       └── mic-symbolic.svg
+├── com.system76.CosmicRadio.desktop
+├── com.system76.CosmicRadio.metainfo.xml
+└── stations.toml
+debian/
+├── changelog
+├── control
+├── copyright
+├── rules
+└── source/format
+src/
+├── main.rs         (9 lines)   — entry point
+├── app.rs          (537 lines) — RadioApp, Message, UI
+├── config.rs       (153 lines) — ConfigManager, types, TOML I/O
+├── audio.rs        (100 lines) — AudioBackend, GStreamer, PLS
+├── artwork.rs      (89 lines)  — ArtworkCache, async download
+└── url_handler.rs  (326 lines) — URL resolution, API parsers
 ```

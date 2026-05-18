@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="addon">
+  <id>com.system76.CosmicRadio</id>
+  <name>COSMIC Radio</name>
+  <summary>Internet radio streaming applet for the COSMIC desktop</summary>
+  <description>
+    <p>A minimalist COSMIC panel applet for streaming internet radio stations.
+      Features include station management via TOML config, now-playing metadata
+      display, volume control, PLS playlist support, and album artwork caching.</p>
+  </description>
+  <url type="homepage">https://github.com/pop-os/cosmic-radio</url>
+  <extends>com.system76.CosmicApplets</extends>
+  <categories>
+    <category>Audio</category>
+    <category>Network</category>
+  </categories>
+  <compulsory_for_desktop>COSMIC</compulsory_for_desktop>
+  <custom>
+    <value key="X-CosmicApplet">true</value>
+  </custom>
+</component>

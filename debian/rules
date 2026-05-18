@@ -1,0 +1,12 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+override_dh_auto_build:
+	just build
+
+override_dh_auto_install:
+	just rootdir=$(CURDIR)/debian/cosmic-radio install
+
+override_dh_auto_clean:
+	cargo clean
