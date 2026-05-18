@@ -2,6 +2,7 @@
 name = "cosmic-radio"
 version = "0.1.0"
 edition = "2021"
+authors = ["@AdamMKG <stonehouse.adam@gmail.com>"]
 
 [dependencies]
 libcosmic = { git = "https://github.com/pop-os/libcosmic", default-features = false, features = ["applet", "tokio", "wayland"] }

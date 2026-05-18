@@ -40,3 +40,13 @@ check:
 # Build and install in one step
 all: install
     @echo "{{ name }} installed. Log out/in or restart COSMIC panel to see it."
+
+# Bump version in Cargo.toml, update debian/changelog, commit, and tag
+tag version:
+    sed -i '0,/^version/s/^version.*/version = "{{ version }}"/' Cargo.toml
+    cargo check
+    cargo clean
+    dch -D noble -v {{ version }}-1
+    git add Cargo.toml Cargo.lock debian/changelog
+    git commit -m "release: v{{ version }}"
+    git tag -a v{{ version }} -m "release v{{ version }}"

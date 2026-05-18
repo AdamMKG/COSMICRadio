@@ -6,4 +6,4 @@ cosmic-radio (0.1.0-1) noble; urgency=medium
   * Now-playing metadata display and artwork caching.
   * PLS playlist support and "Play from URL" feature.
 
- -- Pop OS Team <maintainers@system76.com>  Tue, 19 May 2026 00:00:00 +0000
+ -- @AdamMKG <stonehouse.adam@gmail.com>  Tue, 19 May 2026 00:00:00 +0000

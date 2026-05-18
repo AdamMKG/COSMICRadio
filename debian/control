@@ -1,7 +1,7 @@
 Source: cosmic-radio
 Section: sound
 Priority: optional
-Maintainer: Pop OS Team <maintainers@system76.com>
+Maintainer: @AdamMKG <stonehouse.adam@gmail.com>
 Build-Depends: debhelper-compat (= 13),
                just,
                cargo,
@@ -12,7 +12,7 @@ Build-Depends: debhelper-compat (= 13),
                libssl-dev,
                libwayland-dev
 Standards-Version: 4.6.2
-Homepage: https://github.com/pop-os/cosmic-radio
+Homepage: https://github.com/AdamMKG/COSMICRadio
 Rules-Requires-Root: no
 
 Package: cosmic-radio
