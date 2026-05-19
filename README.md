@@ -1,5 +1,7 @@
 # COSMIC Radio Applet
 
+<img width="50%" height="auto" alt="Screenshot_2026-05-19_11-53-31" src="https://github.com/user-attachments/assets/37fe4baa-4a7e-432d-a98e-748dcd9f30c4" />
+
 A minimalist, native COSMIC panel applet for streaming internet radio stations. Built with Rust for the COSMIC desktop environment.
 
 ## Purpose
@@ -33,11 +35,10 @@ COSMIC Radio provides a simple, integrated way to stream internet radio stations
 
 ## Features
 
-- **Phase 1**: Basic cosmic_applet scaffold with Hello World popup
-- **Phase 2**: Stations.toml config loading with default stations
-- **Phase 3**: GStreamer audio playback with playbin
-- **Phase 4**: libcosmic widget styling for native look-and-feel
-- **Current**: Album artwork fetching and display from station URLs
+- Minimalist interface allowing control of volume and playback directly from the tray
+- Easy to configure custom stations and groupings through .toml file
+- Auto add streams by URL or via JSON API endpoints
+- Auto configure highest quality stream from .pls format
 
 ## Usage
 
@@ -93,11 +94,3 @@ This project was created with the assistance of **Opencode**, an AI-powered codi
 
 Human developers retain full responsibility for code review, testing, and functionality decisions.
 
-## Git Restore Points
-
-- `29af3e2`: Phase 1 complete
-- `ac0e6ea`: Phase 2 complete  
-- `e757d6f`: Phase 3 + 4 complete
-- `963ab48`: README and Phase 4 styling complete
-- `991fcdb`: .desktop file and install configuration
-- `e4b4495`: justfile for build/install commands
