@@ -22,6 +22,12 @@
   <launchable type="desktop-id">com.system76.CosmicRadio.desktop</launchable>
   <url type="homepage">https://github.com/AdamMKG/COSMICRadio</url>
   <url type="bugtracker">https://github.com/AdamMKG/COSMICRadio/issues</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/AdamMKG/COSMICRadio/main/res/screenshots/cosmic-radio-popup.png</image>
+      <caption>The COSMIC Radio panel popup showing stations and now-playing information</caption>
+    </screenshot>
+  </screenshots>
   <categories>
     <category>Audio</category>
     <category>Network</category>
@@ -34,6 +40,16 @@
   </keywords>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="0.2.1" date="2026-08-15">
+      <description>
+        <p>Packaging fixes for Pop Store submission</p>
+        <ul>
+          <li>Well-formed maintainer contact</li>
+          <li>Correct homepage URL and AppStream metadata fixes</li>
+          <li>Valid desktop file categories</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.0" date="2026-08-15">
       <description>
         <p>MPRIS2 support</p>
