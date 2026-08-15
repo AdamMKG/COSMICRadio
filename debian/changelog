@@ -1,3 +1,11 @@
+cosmic-radio (0.2.1-1) noble; urgency=medium
+
+  * Packaging fixes for Pop Store submission: well-formed maintainer
+    contact, correct homepage URL, AppStream metadata fixes (license,
+    releases, developer info), and valid desktop file categories.
+
+ -- Adam Balestone <stonehouse.adam@gmail.com>  Sat, 15 Aug 2026 23:10:07 +0100
+
 cosmic-radio (0.2.0-1) noble; urgency=medium
 
   * MPRIS2 support: now-playing metadata (title, artist, stream URL, artwork),
