@@ -1,3 +1,13 @@
+cosmic-radio (0.2.0-1) noble; urgency=medium
+
+  * MPRIS2 support: now-playing metadata (title, artist, stream URL, artwork),
+    playback status, and media controls (play, pause, stop, play-pause) for
+    integration with other desktop media applications.
+  * Volume control from MPRIS clients.
+  * Clippy lint fixes.
+
+ -- @AdamMKG <stonehouse.adam@gmail.com>  Sat, 15 Aug 2026 22:48:02 +0100
+
 cosmic-radio (0.1.0-1) noble; urgency=medium
 
   * Initial release for Pop OS.
