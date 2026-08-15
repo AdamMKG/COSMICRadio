@@ -69,7 +69,7 @@ impl cosmic::Application for RadioApp {
     type Executor = cosmic::SingleThreadExecutor;
     type Flags = ();
     type Message = Message;
-    const APP_ID: &'static str = "com.system76.CosmicRadio";
+    const APP_ID: &'static str = "io.github.AdamMKG.CosmicRadio";
 
     fn core(&self) -> &cosmic::app::Core {
         &self.core
@@ -338,7 +338,7 @@ impl cosmic::Application for RadioApp {
     fn view(&self) -> Element<'_, Message> {
         self.core
             .applet
-            .icon_button("com.system76.CosmicRadio-symbolic")
+            .icon_button("io.github.AdamMKG.CosmicRadio-symbolic")
             .on_press_down(Message::TogglePopup)
             .into()
     }

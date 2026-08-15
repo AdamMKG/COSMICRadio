@@ -63,7 +63,7 @@ impl ArtworkCache {
     fn artwork_cache_dir() -> PathBuf {
         dirs::cache_dir()
             .unwrap_or_else(|| PathBuf::from("/tmp"))
-            .join("cosmic-radio")
+            .join("cosmic-ext-radio")
             .join("artwork")
     }
 

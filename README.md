@@ -1,4 +1,4 @@
-# COSMIC Radio Applet
+# Cosmic Radio Applet
 
 <img width="50%" height="auto" alt="Screenshot_2026-05-19_11-53-31" src="https://github.com/user-attachments/assets/37fe4baa-4a7e-432d-a98e-748dcd9f30c4" />
 
@@ -54,15 +54,17 @@ COSMIC Radio provides a simple, integrated way to stream internet radio stations
 Install the prebuilt `.deb` from the [latest release](https://github.com/AdamMKG/COSMICRadio/releases):
 
 ```bash
-curl -LO https://github.com/AdamMKG/COSMICRadio/releases/latest/download/cosmic-radio_0.2.2-1_amd64.deb
-sudo apt install ./cosmic-radio_0.2.2-1_amd64.deb
+curl -LO https://github.com/AdamMKG/COSMICRadio/releases/latest/download/cosmic-ext-radio_0.3.0-1_amd64.deb
+sudo apt install ./cosmic-ext-radio_0.3.0-1_amd64.deb
 ```
 
-`apt` resolves the GStreamer dependency automatically. The release assets also include a standalone `cosmic-radio` binary. Once installed, add the applet to the COSMIC panel by searching for **COSMIC Radio**. It exposes MPRIS2 via `org.mpris.MediaPlayer2.cosmicradio`, so it works with `playerctl` and other media controls.
+`apt` resolves the GStreamer dependency automatically. The release assets also include a standalone `cosmic-ext-radio` binary. Once installed, add the applet to the COSMIC panel by searching for **Cosmic Radio**. It exposes MPRIS2 via `org.mpris.MediaPlayer2.cosmic-ext-radio`, so it works with `playerctl` and other media controls.
+
+> **Note:** The app is packaged as `cosmic-ext-radio` with App ID `io.github.AdamMKG.CosmicRadio`, per the [COSMIC trademark policy](https://github.com/pop-os/cosmic-epoch/blob/master/TRADEMARK.md) (third-party apps use the `cosmic-ext-` namespace and avoid the `com.system76.` prefix).
 
 ## Configuration
 
-Stations are stored in `~/.config/cosmic-radio/stations.toml`:
+Stations are stored in `~/.config/cosmic-ext-radio/stations.toml`:
 
 ```toml
 [[stations]]

@@ -1,6 +1,6 @@
 [package]
-name = "cosmic-radio"
-version = "0.2.2"
+name = "cosmic-ext-radio"
+version = "0.3.0"
 edition = "2021"
 authors = ["Adam Balestone <stonehouse.adam@gmail.com>"]
 license = "GPL-3.0-or-later"

@@ -5,8 +5,8 @@
 *.swp
 *.swo
 debian/.debhelper/
-debian/cosmic-radio/
-debian/cosmic-radio.debhelper.log
+debian/cosmic-ext-radio/
+debian/cosmic-ext-radio.debhelper.log
 debian/files
 debian/*.substvars
 debian/debhelper-build-stamp

@@ -923,6 +923,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "cosmic-ext-radio"
+version = "0.3.0"
+dependencies = [
+ "dirs 5.0.1",
+ "futures",
+ "gstreamer",
+ "gstreamer-play",
+ "libcosmic",
+ "mpris-server",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tokio",
+ "toml 0.8.23",
+]
+
+[[package]]
 name = "cosmic-freedesktop-icons"
 version = "0.4.0"
 source = "git+https://github.com/pop-os/freedesktop-icons#9c562fe3ecf03241a46a60c0078cd6ea10bd75ce"
@@ -962,24 +980,6 @@ dependencies = [
  "wayland-protocols-wlr",
  "wayland-scanner",
  "wayland-server",
-]
-
-[[package]]
-name = "cosmic-radio"
-version = "0.2.2"
-dependencies = [
- "dirs 5.0.1",
- "futures",
- "gstreamer",
- "gstreamer-play",
- "libcosmic",
- "mpris-server",
- "reqwest",
- "serde",
- "serde_json",
- "sha2",
- "tokio",
- "toml 0.8.23",
 ]
 
 [[package]]

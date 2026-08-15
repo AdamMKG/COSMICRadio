@@ -28,10 +28,19 @@ struct Config {
 }
 
 fn config_path() -> PathBuf {
-    dirs::config_dir()
+    let new_path = dirs::config_dir()
         .unwrap_or_else(|| PathBuf::from("~/.config"))
-        .join("cosmic-radio")
-        .join("stations.toml")
+        .join("cosmic-ext-radio");
+    if !new_path.join("stations.toml").exists() {
+        let legacy = dirs::config_dir()
+            .unwrap_or_else(|| PathBuf::from("~/.config"))
+            .join("cosmic-radio");
+        if legacy.join("stations.toml").exists() {
+            let _ = fs::create_dir_all(&new_path);
+            let _ = fs::copy(legacy.join("stations.toml"), new_path.join("stations.toml"));
+        }
+    }
+    new_path.join("stations.toml")
 }
 
 fn load_config() -> Config {
@@ -65,7 +74,7 @@ fn ensure_config() -> PathBuf {
         let _ = fs::create_dir_all(parent);
     }
     if !path.exists() {
-        let default_path = PathBuf::from("/usr/share/cosmic-radio/stations.toml");
+        let default_path = PathBuf::from("/usr/share/cosmic-ext-radio/stations.toml");
         if default_path.exists() {
             let _ = fs::copy(&default_path, &path);
         }

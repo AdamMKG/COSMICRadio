@@ -1,5 +1,5 @@
-appid := "com.system76.CosmicRadio"
-name := "cosmic-radio"
+appid := "io.github.AdamMKG.CosmicRadio"
+name := "cosmic-ext-radio"
 prefix := "/usr"
 bindir := prefix / "bin"
 datadir := prefix / "share"

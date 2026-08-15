@@ -1,4 +1,4 @@
-Source: cosmic-radio
+Source: cosmic-ext-radio
 Section: sound
 Priority: optional
 Maintainer: Adam Balestone <stonehouse.adam@gmail.com>
@@ -15,7 +15,7 @@ Standards-Version: 4.6.2
 Homepage: https://github.com/AdamMKG/COSMICRadio
 Rules-Requires-Root: no
 
-Package: cosmic-radio
+Package: cosmic-ext-radio
 Architecture: any
 Depends: ${misc:Depends},
          ${shlibs:Depends},

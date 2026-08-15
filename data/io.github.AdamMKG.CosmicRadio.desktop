@@ -1,12 +1,12 @@
 [Desktop Entry]
-Name=COSMIC Radio
+Name=Cosmic Radio
 Comment=Stream internet radio stations from the COSMIC panel
 Type=Application
-Exec=cosmic-radio
+Exec=cosmic-ext-radio
 Terminal=false
 Categories=AudioVideo;Audio;
 Keywords=COSMIC;Applet;Radio;Streaming;
-Icon=com.system76.CosmicRadio-symbolic
+Icon=io.github.AdamMKG.CosmicRadio-symbolic
 StartupNotify=true
 NoDisplay=true
 X-CosmicApplet=true

@@ -6,8 +6,8 @@ use mpris_server::{
 use std::future::Future;
 use std::sync::mpsc;
 
-const BUS_NAME_SUFFIX: &str = "cosmicradio";
-const TRACK_ID: &str = "/com/system76/CosmicRadio/Track";
+const BUS_NAME_SUFFIX: &str = "cosmic-ext-radio";
+const TRACK_ID: &str = "/io/github/AdamMKG/CosmicRadio/Track";
 
 /// Commands received from external MPRIS clients, forwarded to the app.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -20,8 +20,8 @@ pub enum Command {
     Raise,
 }
 
-/// Exposes COSMIC Radio to other applications via the MPRIS2 D-Bus interface
-/// (`org.mpris.MediaPlayer2.cosmicradio`).
+/// Exposes Cosmic Radio to other applications via the MPRIS2 D-Bus interface
+/// (`org.mpris.MediaPlayer2.cosmic-ext-radio`).
 ///
 /// The `Player` handle from `mpris-server` is not `Send`, so it stays on the
 /// main thread alongside the iced app. Its event loop is driven by calling
@@ -41,8 +41,8 @@ impl Mpris {
         let player = tokio::runtime::Handle::current()
             .block_on(
                 Player::builder(BUS_NAME_SUFFIX)
-                    .identity("COSMIC Radio")
-                    .desktop_entry("com.system76.CosmicRadio")
+                    .identity("Cosmic Radio")
+                    .desktop_entry("io.github.AdamMKG.CosmicRadio")
                     .supported_uri_schemes(["http", "https"])
                     .can_play(true)
                     .can_pause(true)

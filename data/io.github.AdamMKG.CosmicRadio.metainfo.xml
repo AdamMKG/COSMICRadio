@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>com.system76.CosmicRadio</id>
+  <id>io.github.AdamMKG.CosmicRadio</id>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
-  <name>COSMIC Radio</name>
+  <name>Cosmic Radio</name>
   <summary>Internet radio streaming applet for the COSMIC desktop</summary>
   <description>
     <p>A minimalist COSMIC panel applet for streaming internet radio stations, with station
@@ -19,7 +19,7 @@
       <li>MPRIS2 integration: now-playing metadata and media controls for other desktop applications</li>
     </ul>
   </description>
-  <launchable type="desktop-id">com.system76.CosmicRadio.desktop</launchable>
+  <launchable type="desktop-id">io.github.AdamMKG.CosmicRadio.desktop</launchable>
   <url type="homepage">https://github.com/AdamMKG/COSMICRadio</url>
   <url type="bugtracker">https://github.com/AdamMKG/COSMICRadio/issues</url>
   <screenshots>
@@ -40,6 +40,21 @@
   </keywords>
   <content_rating type="oars-1.1"/>
   <releases>
+    <release version="0.3.0" date="2026-08-15">
+      <description>
+        <p>Rename for COSMIC trademark compliance</p>
+        <ul>
+          <li>Package and binary renamed to cosmic-ext-radio</li>
+          <li>App ID changed to io.github.AdamMKG.CosmicRadio</li>
+          <li>Config and cache directories migrated to cosmic-ext-radio</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.2.2" date="2026-08-15">
+      <description>
+        <p>Added applet screenshot to AppStream metadata</p>
+      </description>
+    </release>
     <release version="0.2.1" date="2026-08-15">
       <description>
         <p>Packaging fixes for Pop Store submission</p>
@@ -73,7 +88,7 @@
     </release>
   </releases>
   <provides>
-    <binary>cosmic-radio</binary>
+    <binary>cosmic-ext-radio</binary>
   </provides>
   <developer id="stonehouse.adam@gmail.com">
     <name>Adam Balestone</name>
