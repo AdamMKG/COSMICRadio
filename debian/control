@@ -1,7 +1,7 @@
 Source: cosmic-radio
 Section: sound
 Priority: optional
-Maintainer: @AdamMKG <stonehouse.adam@gmail.com>
+Maintainer: Adam Balestone <stonehouse.adam@gmail.com>
 Build-Depends: debhelper-compat (= 13),
                just,
                cargo,

@@ -1,21 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component type="addon">
+<component type="desktop-application">
   <id>com.system76.CosmicRadio</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
   <name>COSMIC Radio</name>
   <summary>Internet radio streaming applet for the COSMIC desktop</summary>
   <description>
-    <p>A minimalist COSMIC panel applet for streaming internet radio stations.
-      Features include station management via TOML config, now-playing metadata
-      display, volume control, PLS playlist support, and album artwork caching.</p>
+    <p>A minimalist COSMIC panel applet for streaming internet radio stations, with station
+      management, now-playing metadata with a scrolling marquee, volume control, PLS playlist
+      support, album artwork caching, and MPRIS2 integration for other desktop applications.</p>
+    <p>Features include:</p>
+    <ul>
+      <li>Station management via TOML configuration</li>
+      <li>Now-playing metadata display with scrolling marquee</li>
+      <li>Volume control from the panel popup</li>
+      <li>PLS playlist support and "Play from URL"</li>
+      <li>Album artwork caching</li>
+      <li>MPRIS2 integration: now-playing metadata and media controls for other desktop applications</li>
+    </ul>
   </description>
-  <url type="homepage">https://github.com/pop-os/cosmic-radio</url>
-  <extends>com.system76.CosmicApplets</extends>
+  <launchable type="desktop-id">com.system76.CosmicRadio.desktop</launchable>
+  <url type="homepage">https://github.com/AdamMKG/COSMICRadio</url>
+  <url type="bugtracker">https://github.com/AdamMKG/COSMICRadio/issues</url>
   <categories>
     <category>Audio</category>
     <category>Network</category>
   </categories>
-  <compulsory_for_desktop>COSMIC</compulsory_for_desktop>
-  <custom>
-    <value key="X-CosmicApplet">true</value>
-  </custom>
+  <keywords>
+    <keyword>radio</keyword>
+    <keyword>streaming</keyword>
+    <keyword>music</keyword>
+    <keyword>applet</keyword>
+  </keywords>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="0.2.0" date="2026-08-15">
+      <description>
+        <p>MPRIS2 support</p>
+        <ul>
+          <li>Now-playing metadata (title, artist, stream URL, artwork) over MPRIS2</li>
+          <li>Media controls from external clients (play, pause, stop, play-pause)</li>
+          <li>Volume control from MPRIS clients</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.1.0" date="2026-05-19">
+      <description>
+        <p>Initial release</p>
+        <ul>
+          <li>Internet radio streaming applet for the COSMIC desktop</li>
+          <li>Station management via TOML configuration</li>
+          <li>Now-playing metadata display and artwork caching</li>
+          <li>PLS playlist support and "Play from URL" feature</li>
+        </ul>
+      </description>
+    </release>
+  </releases>
+  <provides>
+    <binary>cosmic-radio</binary>
+  </provides>
+  <developer id="stonehouse.adam@gmail.com">
+    <name>Adam Balestone</name>
+  </developer>
 </component>
