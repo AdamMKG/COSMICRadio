@@ -49,6 +49,17 @@ COSMIC Radio provides a simple, integrated way to stream internet radio stations
 5. View album artwork when available
 6. Click "Edit Stations" to add/remove stations via text editor
 
+## Installation
+
+Install the prebuilt `.deb` from the [latest release](https://github.com/AdamMKG/COSMICRadio/releases):
+
+```bash
+curl -LO https://github.com/AdamMKG/COSMICRadio/releases/latest/download/cosmic-radio_0.2.2-1_amd64.deb
+sudo apt install ./cosmic-radio_0.2.2-1_amd64.deb
+```
+
+`apt` resolves the GStreamer dependency automatically. The release assets also include a standalone `cosmic-radio` binary. Once installed, add the applet to the COSMIC panel by searching for **COSMIC Radio**. It exposes MPRIS2 via `org.mpris.MediaPlayer2.cosmicradio`, so it works with `playerctl` and other media controls.
+
 ## Configuration
 
 Stations are stored in `~/.config/cosmic-radio/stations.toml`:
