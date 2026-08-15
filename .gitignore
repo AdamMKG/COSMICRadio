@@ -9,3 +9,4 @@ debian/cosmic-radio/
 debian/cosmic-radio.debhelper.log
 debian/files
 debian/*.substvars
+debian/debhelper-build-stamp

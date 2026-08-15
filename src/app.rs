@@ -1,6 +1,7 @@
 use crate::artwork::ArtworkCache;
 use crate::audio::AudioBackend;
 use crate::config::{ConfigManager, Station, StationGroup};
+use crate::mpris;
 use crate::url_handler;
 use cosmic::{
     app,
@@ -14,6 +15,7 @@ use cosmic::{
     Element, Task,
 };
 use std::path::PathBuf;
+use std::sync::mpsc;
 use std::time::Duration;
 
 const MARQUEE_MAX_CHARS: usize = 33;
@@ -43,6 +45,9 @@ pub struct RadioApp {
     url_input: String,
     temp_stream_url: Option<String>,
     temp_stream_name: Option<String>,
+    current_stream_url: Option<String>,
+    mpris: Option<mpris::Mpris>,
+    mpris_cmd_rx: mpsc::Receiver<mpris::Command>,
 }
 
 #[derive(Debug, Clone)]
@@ -78,6 +83,8 @@ impl cosmic::Application for RadioApp {
         let config = ConfigManager::load();
         let group_collapsed = vec![false; config.group_count()];
         let audio = AudioBackend::new();
+        let (mpris_cmd_tx, mpris_cmd_rx) = mpsc::channel();
+        let mpris = mpris::Mpris::new(mpris_cmd_tx);
 
         (
             Self {
@@ -97,6 +104,9 @@ impl cosmic::Application for RadioApp {
                 url_input: String::new(),
                 temp_stream_url: None,
                 temp_stream_name: None,
+                current_stream_url: None,
+                mpris,
+                mpris_cmd_rx,
             },
             Task::none(),
         )
@@ -107,34 +117,13 @@ impl cosmic::Application for RadioApp {
     }
 
     fn update(&mut self, message: Self::Message) -> app::Task<Self::Message> {
+        let mut tasks = Vec::new();
         match message {
             Message::TogglePopup => {
                 if let Some(p) = self.popup.take() {
                     return destroy_popup(p);
-                } else {
-                    let new_id = window::Id::unique();
-                    self.popup.replace(new_id);
-
-                    let popup_settings = self.core.applet.get_popup_settings(
-                        self.core.main_window_id().unwrap(),
-                        new_id,
-                        None,
-                        None,
-                        None,
-                    );
-
-                    for i in 0..self.config.flat_stations().len() {
-                        if let Some(station) = self.config.flat_stations().get(i) {
-                            if let Some(ref url) = station.artwork {
-                                if !url.is_empty() {
-                                    self.artwork.load_artwork(url, i);
-                                }
-                            }
-                        }
-                    }
-
-                    return get_popup(popup_settings);
                 }
+                return self.open_popup();
             }
             Message::Closed(id) => {
                 if self.popup == Some(id) {
@@ -150,41 +139,24 @@ impl cosmic::Application for RadioApp {
                 self.scroll_tick_counter = 0;
 
                 if let Some(station) = self.config.flat_stations().get(index) {
-                    let (_, display_name) = self.audio.play(&station.url, &station.name);
-                    self.now_playing = display_name;
-                    self.audio.set_volume(self.volume);
-
                     if let Some(ref url) = station.artwork {
                         if !url.is_empty() {
                             self.artwork.load_artwork(url, index);
                         }
                     }
                 }
+                self.start_playback();
             }
             Message::TogglePlayback => {
                 self.is_playing = !self.is_playing;
                 if self.is_playing {
-                    self.scroll_offset = 0.0;
-                    self.scroll_tick_counter = 0;
-                    if let Some(index) = self.current_station {
-                        if let Some(station) = self.config.flat_stations().get(index) {
-                            let (_, display_name) = self.audio.play(&station.url, &station.name);
-                            self.now_playing = display_name;
-                            self.audio.set_volume(self.volume);
-                        }
-                    } else if let Some(ref url) = self.temp_stream_url {
-                        let name = self.temp_stream_name.clone().unwrap_or_default();
-                        let (_, display_name) = self.audio.play(url, &name);
-                        self.now_playing = display_name;
-                        self.audio.set_volume(self.volume);
-                    }
+                    self.start_playback();
                 } else {
-                    self.audio.stop();
+                    self.stop_playback();
                 }
             }
             Message::SetVolume(volume) => {
-                self.volume = volume;
-                self.audio.set_volume(volume);
+                self.set_app_volume(volume);
             }
             Message::ToggleUrlInput => {
                 self.show_url_input = !self.show_url_input;
@@ -222,10 +194,12 @@ impl cosmic::Application for RadioApp {
                         let (stream_url, display_name) =
                             self.audio.play(&first.stream_url, &first.name);
                         let resolved_url = stream_url.clone();
+                        self.current_stream_url = Some(stream_url.clone());
                         self.temp_stream_url = Some(stream_url);
                         self.temp_stream_name = Some(display_name.clone());
-                        self.now_playing = display_name;
+                        self.now_playing = display_name.clone();
                         self.audio.set_volume(self.volume);
+                        self.push_mpris_metadata(&display_name, None, &resolved_url);
 
                         if source.channels.len() == 1
                             && source.group_name == "Uncategorised"
@@ -299,10 +273,32 @@ impl cosmic::Application for RadioApp {
                 }
             }
             Message::MarqueeTick => {
-                if let Some(new_title) = self.audio.take_metadata() {
-                    self.now_playing = new_title;
-                    self.scroll_offset = 0.0;
-                    self.scroll_tick_counter = 0;
+                if let Some(m) = &mut self.mpris {
+                    m.tick();
+                }
+
+                let commands: Vec<mpris::Command> = self.mpris_cmd_rx.try_iter().collect();
+                for command in commands {
+                    tasks.push(self.handle_mpris_command(command));
+                }
+
+                if let Some((artist, title)) = self.audio.take_metadata() {
+                    if let Some(display) = Self::format_metadata(&artist, &title) {
+                        self.now_playing = display;
+                        self.scroll_offset = 0.0;
+                        self.scroll_tick_counter = 0;
+                    }
+                    if self.is_playing {
+                        if let Some(m) = &self.mpris {
+                            let url = self.current_stream_url.clone().unwrap_or_default();
+                            m.set_playing(
+                                title.unwrap_or_default(),
+                                artist,
+                                url,
+                                self.current_art_url(),
+                            );
+                        }
+                    }
                 }
 
                 if !self.now_playing.is_empty() {
@@ -336,7 +332,7 @@ impl cosmic::Application for RadioApp {
                 }
             }
         }
-        Task::none()
+        Task::batch(tasks)
     }
 
     fn view(&self) -> Element<'_, Message> {
@@ -533,5 +529,134 @@ impl RadioApp {
             .into()
     }
 
+    fn open_popup(&mut self) -> app::Task<Message> {
+        let new_id = window::Id::unique();
+        self.popup.replace(new_id);
 
+        let popup_settings = self.core.applet.get_popup_settings(
+            self.core.main_window_id().unwrap(),
+            new_id,
+            None,
+            None,
+            None,
+        );
+
+        for i in 0..self.config.flat_stations().len() {
+            if let Some(station) = self.config.flat_stations().get(i) {
+                if let Some(ref url) = station.artwork {
+                    if !url.is_empty() {
+                        self.artwork.load_artwork(url, i);
+                    }
+                }
+            }
+        }
+
+        get_popup(popup_settings)
+    }
+
+    fn start_playback(&mut self) {
+        self.scroll_offset = 0.0;
+        self.scroll_tick_counter = 0;
+
+        if let Some(index) = self.current_station {
+            if let Some(station) = self.config.flat_stations().get(index) {
+                let (stream_url, display_name) = self.audio.play(&station.url, &station.name);
+                self.current_stream_url = Some(stream_url.clone());
+                self.now_playing = display_name.clone();
+                self.audio.set_volume(self.volume);
+                self.push_mpris_metadata(&display_name, None, &stream_url);
+                return;
+            }
+        }
+
+        if let Some(ref url) = self.temp_stream_url {
+            let name = self.temp_stream_name.clone().unwrap_or_default();
+            let (stream_url, display_name) = self.audio.play(url, &name);
+            self.current_stream_url = Some(stream_url.clone());
+            self.now_playing = display_name.clone();
+            self.audio.set_volume(self.volume);
+            self.push_mpris_metadata(&display_name, None, &stream_url);
+        }
+    }
+
+    fn stop_playback(&mut self) {
+        self.audio.stop();
+        if let Some(m) = &self.mpris {
+            m.set_stopped();
+        }
+    }
+
+    fn set_app_volume(&mut self, volume: f64) {
+        self.volume = volume;
+        self.audio.set_volume(volume);
+        if let Some(m) = &self.mpris {
+            m.set_volume(volume);
+        }
+    }
+
+    fn handle_mpris_command(&mut self, command: mpris::Command) -> app::Task<Message> {
+        match command {
+            mpris::Command::Play => {
+                if !self.is_playing {
+                    self.is_playing = true;
+                    self.start_playback();
+                }
+                Task::none()
+            }
+            mpris::Command::Pause | mpris::Command::Stop => {
+                if self.is_playing {
+                    self.is_playing = false;
+                    self.stop_playback();
+                }
+                Task::none()
+            }
+            mpris::Command::PlayPause => {
+                self.is_playing = !self.is_playing;
+                if self.is_playing {
+                    self.start_playback();
+                } else {
+                    self.stop_playback();
+                }
+                Task::none()
+            }
+            mpris::Command::SetVolume(volume) => {
+                self.set_app_volume(volume);
+                Task::none()
+            }
+            mpris::Command::Raise => {
+                if self.popup.is_none() {
+                    self.open_popup()
+                } else {
+                    Task::none()
+                }
+            }
+        }
+    }
+
+    fn push_mpris_metadata(&self, title: &str, artist: Option<String>, url: &str) {
+        if let Some(m) = &self.mpris {
+            m.set_playing(
+                title.to_string(),
+                artist,
+                url.to_string(),
+                self.current_art_url(),
+            );
+        }
+    }
+
+    fn current_art_url(&self) -> Option<String> {
+        self.current_station
+            .and_then(|i| self.artwork.get(&i))
+            .filter(|p| p.exists())
+            .map(|p| format!("file://{}", p.display()))
+    }
+
+    fn format_metadata(artist: &Option<String>, title: &Option<String>) -> Option<String> {
+        match (artist, title) {
+            (Some(a), Some(t)) => Some(format!("{} - {}", a, t)),
+            (None, Some(t)) => Some(t.clone()),
+            (Some(a), None) => Some(a.clone()),
+            _ => None,
+        }
+    }
 }

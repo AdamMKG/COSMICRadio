@@ -24,9 +24,7 @@ impl ArtworkCache {
         let cache_file = cache_dir.join(Self::cache_filename(artwork_url));
 
         if cache_file.exists() && Self::is_cache_fresh(&cache_file) {
-            if !self.cache.contains_key(&index) {
-                self.cache.insert(index, cache_file);
-            }
+            self.cache.entry(index).or_insert(cache_file);
             return;
         }
 

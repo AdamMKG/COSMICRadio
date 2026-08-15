@@ -3,16 +3,20 @@ use gstreamer::{tags::Artist, tags::Title, BusSyncReply, MessageView};
 use gstreamer_play::Play;
 use std::sync::{Arc, Mutex};
 
+/// The latest stream metadata as `(artist, title)`, where either field may be
+/// missing.
+type StreamMetadata = Option<(Option<String>, Option<String>)>;
+
 pub struct AudioBackend {
     player: Play,
-    latest_metadata: Arc<Mutex<Option<String>>>,
+    latest_metadata: Arc<Mutex<StreamMetadata>>,
 }
 
 impl AudioBackend {
     pub fn new() -> Self {
         gstreamer::init().expect("Failed to initialize GStreamer");
         let player: Play = Play::new(None::<gstreamer_play::PlayVideoRenderer>);
-        let latest_metadata = Arc::new(Mutex::new(None::<String>));
+        let latest_metadata = Arc::new(Mutex::new(None));
 
         let pipeline = player.pipeline();
         if let Some(bus) = pipeline.bus() {
@@ -23,16 +27,9 @@ impl AudioBackend {
                     let artist = tags.get::<Artist>().map(|v| v.get().to_string());
                     let title = tags.get::<Title>().map(|v| v.get().to_string());
 
-                    let display = match (artist, title) {
-                        (Some(a), Some(t)) => Some(format!("{} - {}", a, t)),
-                        (None, Some(t)) => Some(t),
-                        (Some(a), None) => Some(a),
-                        _ => None,
-                    };
-
-                    if let Some(s) = display {
+                    if artist.is_some() || title.is_some() {
                         if let Ok(mut guard) = md.lock() {
-                            *guard = Some(s);
+                            *guard = Some((artist, title));
                         }
                     }
                 }
@@ -67,7 +64,7 @@ impl AudioBackend {
         self.player.set_volume(volume);
     }
 
-    pub fn take_metadata(&self) -> Option<String> {
+    pub fn take_metadata(&self) -> Option<(Option<String>, Option<String>)> {
         self.latest_metadata.lock().ok().and_then(|mut g| g.take())
     }
 

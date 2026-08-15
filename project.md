@@ -292,10 +292,77 @@ debian/
 ├── rules
 └── source/format
 src/
-├── main.rs         (9 lines)   — entry point
-├── app.rs          (537 lines) — RadioApp, Message, UI
-├── config.rs       (153 lines) — ConfigManager, types, TOML I/O
-├── audio.rs        (100 lines) — AudioBackend, GStreamer, PLS
-├── artwork.rs      (89 lines)  — ArtworkCache, async download
-└── url_handler.rs  (326 lines) — URL resolution, API parsers
+├── main.rs         (10 lines)  — entry point
+├── app.rs          (662 lines) — RadioApp, Message, UI, MPRIS integration
+├── config.rs       (145 lines) — ConfigManager, types, TOML I/O
+├── audio.rs        (97 lines)  — AudioBackend, GStreamer, PLS, metadata
+├── artwork.rs      (87 lines)  — ArtworkCache, async download
+├── mpris.rs        (144 lines) — MPRIS2 D-Bus server (mpris-server crate)
+└── url_handler.rs  (325 lines) — URL resolution, API parsers
 ```
+
+## Session 6 — 15 Aug 2026
+
+### Changes Made This Session
+
+#### MPRIS2 support (Media Player Remote Interfacing Spec)
+
+COSMIC Radio now exposes itself on the session D-Bus as `org.mpris.MediaPlayer2.cosmicradio`
+(`/org/mpris/MediaPlayer2`), so other applications (playerctl, GNOME/KDE media widgets,
+now-playing indicators) can read the currently playing station/song and control playback.
+
+- Added `mpris-server` v0.10 (the maintained server-side implementation of the MPRIS spec,
+  built on `zbus` 5.x — same version already used transitively by libcosmic, so no crate
+  conflict) with the `tokio` feature, and `futures` for a `LocalPool`.
+- New `src/mpris.rs`: wraps the ready-made `Player` from `mpris-server`.
+  - Exposes Identity ("COSMIC Radio"), DesktopEntry (`com.system76.CosmicRadio`),
+    supported URI schemes (http/https), CanPlay/CanPause/CanControl; CanSeek and
+    prev/next are disabled (live radio has no seeking or track skipping).
+  - External method calls (Play/Pause/PlayPause/Stop/SetVolume/Raise) are forwarded to
+    the app over an `mpsc` channel as `mpris::Command` values.
+  - The `Player` handle is Rc-based (not `Send`), so it lives on the iced main thread;
+    its event loop is driven by a `futures::LocalPool` polled on every `MarqueeTick`
+    (50 ms timer), and async property updates are driven with
+    `tokio::runtime::Handle::block_on` (iced runs `init`/`update` inside a Tokio
+    runtime context, so this is safe).
+  - `set_playing()` publishes `xesam:title`, `xesam:artist`, `xesam:url`, and
+    `mpris:artUrl` (a `file://` URL pointing at the cached artwork when present),
+    plus `PlaybackStatus`; `set_stopped()` and `set_volume()` mirror the app state.
+
+#### Metadata plumbing
+- `src/audio.rs`: `AudioBackend` now stores artist and title separately
+  (`(Option<String>, Option<String>)`) instead of a pre-joined string, so MPRIS can
+  expose them as distinct fields. `take_metadata()` signature updated.
+- `src/app.rs`:
+  - `RadioApp` holds the `Mpris` server plus the command receiver.
+  - Playback logic extracted into `start_playback()` / `stop_playback()` helpers used by
+    both UI messages and external MPRIS commands; `set_app_volume()` mirrors volume to
+    both GStreamer and MPRIS.
+  - `push_mpris_metadata()` is called on station select, play, URL submit, and whenever
+    fresh stream tags arrive; `current_art_url()` converts the cached artwork path to a
+    `file://` URI.
+  - `handle_mpris_command()` maps external commands onto the same app actions, including
+    `Raise` → opens the popup; `open_popup()` extracted from `TogglePopup`.
+  - `update()` now accumulates tasks and returns `Task::batch(...)` so popup-opening
+    tasks from MPRIS `Raise` are properly run.
+- `Cargo.toml`: added `mpris-server` and `futures` dependencies.
+
+#### Lint fixes (pre-existing, surfaced by current clippy)
+- `src/artwork.rs` — `contains_key`+`insert` → `entry().or_insert()`.
+- `src/config.rs` — manual `Default` impl → derive.
+- `src/url_handler.rs` — `.filter().last()` → `.rfind()`.
+
+### Verification
+- `cargo build` and `just check` (clippy `-D warnings`) pass clean.
+- Manual test once running in a COSMIC session:
+  - `playerctl status` / `playerctl metadata`
+  - `playerctl play-pause`, `playerctl stop`, `playerctl volume 0.3`
+  - `gdbus introspect --session --dest org.mpris.MediaPlayer2.cosmicradio --object-path /org/mpris/MediaPlayer2`
+
+### Files Changed
+- `Cargo.toml` — added `mpris-server`, `futures`
+- `src/mpris.rs` — new (MPRIS2 server)
+- `src/audio.rs` — separate artist/title metadata
+- `src/app.rs` — MPRIS integration, playback helpers, task batching
+- `src/main.rs` — registered `mod mpris`
+- `src/artwork.rs`, `src/config.rs`, `src/url_handler.rs` — clippy lint fixes

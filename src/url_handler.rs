@@ -311,8 +311,7 @@ pub fn derive_name_from_url(url: &str) -> String {
         .next()
         .unwrap_or(url)
         .split('/')
-        .filter(|s| !s.is_empty())
-        .last()
+        .rfind(|s| !s.is_empty())
         .and_then(|s| {
             let stem = s.rsplit_once('.').map(|(name, _)| name).unwrap_or(s);
             let cleaned = stem.replace(['-', '_'], " ").trim().to_string();

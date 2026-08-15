@@ -22,15 +22,9 @@ struct OldConfig {
     stations: Vec<Station>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 struct Config {
     groups: Vec<StationGroup>,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self { groups: vec![] }
-    }
 }
 
 fn config_path() -> PathBuf {
